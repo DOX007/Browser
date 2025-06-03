@@ -225,9 +225,9 @@ class ToolbarGestureHandler(
                 contentLayout.translationX = 0f
 
                 val currentTab = store.state.selectedTab ?: return@doOnEnd
-                if(currentTab.content.url == "about:homepage" && tab.content.url != "about:homepage") {
+                if(currentTab.content.url == "about:home" && tab.content.url != "about:home") {
                     activity.findNavController(R.id.container).navigate(R.id.browserFragment)
-                } else if(tab.content.url == "about:homepage" && currentTab.content.url != "about:homepage") {
+                        } else if(tab.content.url == "about:home" && currentTab.content.url != "about:home") {
                     activity.findNavController(R.id.container).navigate(R.id.homeFragment)
                 }
 

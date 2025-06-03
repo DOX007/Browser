@@ -147,7 +147,7 @@ class DefaultBrowserToolbarMenuController(
             }
             is ToolbarMenu.Item.NewTab -> {
                 activity.components.tabsUseCases.addTab.invoke(
-                    if (UserPreferences(activity).homepageType == HomepageChoice.VIEW.ordinal) "about:homepage" else if (UserPreferences(
+                    if (UserPreferences(activity).homepageType == HomepageChoice.VIEW.ordinal) "about:home" else if (UserPreferences(
                             activity
                         ).homepageType == HomepageChoice.BLANK_PAGE.ordinal
                     ) "about:blank" else UserPreferences(activity).customHomepageUrl,
@@ -156,7 +156,7 @@ class DefaultBrowserToolbarMenuController(
             }
             is ToolbarMenu.Item.NewPrivateTab -> {
                 activity.components.tabsUseCases.addTab.invoke(
-                    if (UserPreferences(activity).homepageType == HomepageChoice.VIEW.ordinal) "about:homepage" else if (UserPreferences(
+                    if (UserPreferences(activity).homepageType == HomepageChoice.VIEW.ordinal) "about:home" else if (UserPreferences(
                             activity
                         ).homepageType == HomepageChoice.BLANK_PAGE.ordinal
                     ) "about:blank" else UserPreferences(activity).customHomepageUrl,

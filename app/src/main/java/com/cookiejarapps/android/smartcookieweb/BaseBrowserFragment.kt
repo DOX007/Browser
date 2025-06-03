@@ -600,7 +600,7 @@ abstract class BaseBrowserFragment : Fragment(), UserInteractionHandler, Activit
                             when(UserPreferences(requireContext()).homepageType){
                                 HomepageChoice.VIEW.ordinal -> {
                                     components.tabsUseCases.addTab.invoke(
-                                        "about:homepage",
+                                        "about:home",
                                         selectTab = true
                                     )
                                     navController.navigate(
