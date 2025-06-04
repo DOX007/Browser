@@ -9,9 +9,29 @@ import mozilla.components.concept.storage.BookmarkNodeType
 import mozilla.components.concept.storage.BookmarksStorage
 import java.util.*
 
-class CustomBookmarksStorage(context: Context): BookmarksStorage {
+class CustomBookmarksStorage(private val context: Context): BookmarksStorage {
 
     private val manager = BookmarkManager.getInstance(context)
+
+    fun addDefaultBookmarksIfEmpty() {
+        if (manager.root.itemList.isEmpty()) {
+            manager.root.itemList.add(BookmarkSiteItem("Google", "https://www.google.com", 0L))
+            manager.root.itemList.add(BookmarkSiteItem("YouTube", "https://www.youtube.com", 0L))
+            manager.root.itemList.add(BookmarkSiteItem("Wikipedia", "https://www.wikipedia.org", 0L))
+            manager.root.itemList.add(BookmarkSiteItem("Reddit", "https://www.reddit.com", 0L))
+            manager.root.itemList.add(BookmarkSiteItem("GitHub", "https://github.com", 0L))
+            manager.root.itemList.add(BookmarkSiteItem("Stack Overflow", "https://stackoverflow.com", 0L))
+            manager.root.itemList.add(BookmarkSiteItem("Twitter", "https://twitter.com", 0L))
+            manager.root.itemList.add(BookmarkSiteItem("Hacker News", "https://news.ycombinator.com", 0L))
+            manager.root.itemList.add(BookmarkSiteItem("Amazon", "https://www.amazon.com", 0L))
+            manager.root.itemList.add(BookmarkSiteItem("Netflix", "https://www.netflix.com", 0L))
+            manager.save()
+        }
+    }
+
+    override suspend fun warmUp() {
+        addDefaultBookmarksIfEmpty()
+    }
 
     override suspend fun addFolder(parentGuid: String, title: String, position: UInt?): String {
         TODO("Not yet implemented")
@@ -68,21 +88,21 @@ class CustomBookmarksStorage(context: Context): BookmarksStorage {
 
     override suspend fun searchBookmarks(query: String, limit: Int): List<BookmarkNode> {
         val bookmarks: MutableList<BookmarkNode> = emptyList<BookmarkNode>().toMutableList()
-        for(i in manager.root.itemList){
-            if(i is BookmarkSiteItem){
-                bookmarks.add(BookmarkNode(BookmarkNodeType.ITEM, UUID.randomUUID().toString(), "",
-                    0u, i.title, i.url, 0, 0, null))
+        for (i in manager.root.itemList) {
+            if (i is BookmarkSiteItem) {
+                bookmarks.add(
+                    BookmarkNode(
+                        BookmarkNodeType.ITEM, UUID.randomUUID().toString(), "",
+                        0u, i.title, i.url, 0, 0, null
+                    )
+                )
             }
         }
-
-        return bookmarks.filter { s -> s.title?.contains(query) == true || s.url?.contains(query) == true }.take(limit)
+        return bookmarks.filter { s -> s.title?.contains(query) == true || s.url?.contains(query) == true }
+            .take(limit)
     }
 
     override suspend fun updateNode(guid: String, info: BookmarkInfo) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun warmUp() {
         TODO("Not yet implemented")
     }
 }
