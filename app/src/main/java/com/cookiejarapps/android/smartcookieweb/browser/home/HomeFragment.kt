@@ -1,5 +1,6 @@
 package com.cookiejarapps.android.smartcookieweb.browser.home
 
+import android.util.Log
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
@@ -231,20 +232,12 @@ class HomeFragment : Fragment() {
         }
 
         GlobalScope.launch {
-            // Update shortcut database to hold name
-            val MIGRATION_1_2: Migration = object : Migration(1, 2) {
-                override fun migrate(db: SupportSQLiteDatabase) {
-                    db.execSQL("ALTER TABLE shortcutentity ADD COLUMN title TEXT")
-                }
-            }
-
-            database = Room.databaseBuilder(
-                requireContext(),
-                ShortcutDatabase::class.java, "shortcut-database"
-            ).addMigrations(MIGRATION_1_2).build()
-
+            database = ShortcutDatabase.getDatabase(requireContext())
             val shortcutDao = database?.shortcutDao()
-            val shortcuts: MutableList<ShortcutEntity> = shortcutDao?.getAll() as MutableList
+            val shortcuts = shortcutDao?.getAll()?.toMutableList() ?: mutableListOf<ShortcutEntity>()
+
+            Log.d("ShortcutsTest", "Antal hämtade shortcuts: ${shortcuts.size}")
+            shortcuts.forEach { Log.d("ShortcutsTest", "Shortcut: ${it.title} (${it.url})") }
 
             val adapter = ShortcutGridAdapter(requireContext(), shortcuts)
 
@@ -253,7 +246,8 @@ class HomeFragment : Fragment() {
             }
         }
 
-        binding.shortcutGrid.setOnItemClickListener { _, _, position, _ ->
+
+            binding.shortcutGrid.setOnItemClickListener { _, _, position, _ ->
             findNavController().navigate(
                     R.id.browserFragment
                 )
