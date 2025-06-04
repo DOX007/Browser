@@ -32,7 +32,6 @@ class BookmarkManager private constructor(context: Context) : Serializable {
             if (instance == null) {
                 instance = BookmarkManager(context.applicationContext)
             }
-
             return instance!!
         }
     }
@@ -40,7 +39,15 @@ class BookmarkManager private constructor(context: Context) : Serializable {
     fun initialize(): Boolean {
         root.clear()
 
+        // Lägg in defaultbokmärken vid ny installation
         if (!file.exists() || file.isDirectory){
+            root.add(BookmarkSiteItem("Aftonbladet", "aftonbladet.se/nyheter/a/Rr77qd/aftonbladet-direkt", 0L))
+            root.add(BookmarkSiteItem("Expressen", "https://www.expressen.se/", 0L))
+            root.add(BookmarkSiteItem("Friatider", "https://www.friatider.se/", 0L))
+            root.add(BookmarkSiteItem("Samnytt", "https://samnytt.se/", 0L))
+            root.add(BookmarkSiteItem("YouTube", "https://www.youtube.com/@sprouts", 0L))
+            root.add(BookmarkSiteItem("Podcast", "https://podcastindex.org/podcast/72461", 0L))
+            save()
             return true
         }
 
@@ -48,7 +55,6 @@ class BookmarkManager private constructor(context: Context) : Serializable {
             JsonReader.of(file.source().buffer()).use {
                 root.readForRoot(it)
                 createIndex()
-
                 return true
             }
         } catch (e: IOException) {
@@ -95,7 +101,6 @@ class BookmarkManager private constructor(context: Context) : Serializable {
 
     fun remove(folder: BookmarkFolderItem, index: Int) {
         val item = folder.list.removeAt(index)
-
         if (item is BookmarkSiteItem) {
             removeSiteFromIndex(item)
         }

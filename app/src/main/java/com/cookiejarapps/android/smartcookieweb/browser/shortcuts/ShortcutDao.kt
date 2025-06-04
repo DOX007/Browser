@@ -22,4 +22,3 @@ interface ShortcutDao {
     @Delete
     fun delete(item: ShortcutEntity)
 }
-

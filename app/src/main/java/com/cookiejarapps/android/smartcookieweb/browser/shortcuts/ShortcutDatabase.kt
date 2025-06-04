@@ -7,7 +7,10 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import java.util.concurrent.Executors
 
-@Database(entities = [ShortcutEntity::class], version = 2) // Ändra version om du gjort ändringar!
+@Database(
+    entities = [ShortcutEntity::class],
+    version = 2
+)
 abstract class ShortcutDatabase : RoomDatabase() {
     abstract fun shortcutDao(): ShortcutDao
 
@@ -27,16 +30,16 @@ abstract class ShortcutDatabase : RoomDatabase() {
                         super.onCreate(db)
                         Executors.newSingleThreadExecutor().execute {
                             getDatabase(context).shortcutDao().insertAll(
-                                ShortcutEntity(url = "https://www.google.com", add = false, title = "Google"),
-                                ShortcutEntity(url = "https://www.wikipedia.org", add = false, title = "Wikipedia"),
-                                ShortcutEntity(url = "https://www.youtube.com", add = false, title = "YouTube"),
-                                ShortcutEntity(url = "https://www.reddit.com", add = false, title = "Reddit"),
-                                ShortcutEntity(url = "https://www.github.com", add = false, title = "GitHub"),
-                                ShortcutEntity(url = "https://stackoverflow.com", add = false, title = "Stack Overflow"),
-                                ShortcutEntity(url = "https://twitter.com", add = false, title = "Twitter"),
-                                ShortcutEntity(url = "https://www.facebook.com", add = false, title = "Facebook"),
-                                ShortcutEntity(url = "https://www.instagram.com", add = false, title = "Instagram"),
-                                ShortcutEntity(url = "https://www.amazon.com", add = false, title = "Amazon")
+                                ShortcutEntity(uid = 0, title = "Google", url = "https://www.google.com", add = false),
+                                ShortcutEntity(uid = 0, title = "Wikipedia", url = "https://www.wikipedia.org", add = false),
+                                ShortcutEntity(uid = 0, title = "YouTube", url = "https://www.youtube.com", add = false),
+                                ShortcutEntity(uid = 0, title = "Reddit", url = "https://www.reddit.com", add = false),
+                                ShortcutEntity(uid = 0, title = "GitHub", url = "https://www.github.com", add = false),
+                                ShortcutEntity(uid = 0, title = "Stack Overflow", url = "https://stackoverflow.com", add = false),
+                                ShortcutEntity(uid = 0, title = "Twitter", url = "https://twitter.com", add = false),
+                                ShortcutEntity(uid = 0, title = "Facebook", url = "https://www.facebook.com", add = false),
+                                ShortcutEntity(uid = 0, title = "Instagram", url = "https://www.instagram.com", add = false),
+                                ShortcutEntity(uid = 0, title = "Amazon", url = "https://www.amazon.com", add = false)
                             )
                         }
                     }
