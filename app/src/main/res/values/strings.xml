@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="app_name" translatable="false">MA</string>
-  <string name="url_project" translatable="false">https://github.com/CookieJarApps/SmartCookieWeb-preview</string>
+  <string name="url_project" translatable="false"></string>
 
   <string name="key_javascript_enabled" translatable="false">javascript_enabled</string>
   <string name="key_app_theme_type" translatable="false">app_theme_type</string>
@@ -320,7 +320,7 @@
 
   <string name="show_site_icons">Show site icons?</string>
   <string name="allow_shortcut_favicons">Load icons for shortcuts</string>
-  <string name="allow_shortcut_favicons_prompt">SmartCookieWeb Preview can now show icons of the sites you have shortcuts for on the homepage. However, this feature requires the app to send the URLs of your shortcuts to an external service (par1.cookiejarapps.com/favicon/). No logs are kept about sites sent to the service. Would you like to enable this feature?</string>
+  <string name="allow_shortcut_favicons_prompt"></string>
 
   <string name="flex_mode">Flex mode</string>
 
