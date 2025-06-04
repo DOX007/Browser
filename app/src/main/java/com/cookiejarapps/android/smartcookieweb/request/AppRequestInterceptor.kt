@@ -66,7 +66,7 @@ class AppRequestInterceptor(val context: Context) : RequestInterceptor {
     ): RequestInterceptor.ErrorResponse {
         val riskLevel = getErrorCategory(errorType)
 
-        if (uri == "about:homepage") {
+        if (uri == "about:home") {
             /* This needs to be in onErrorRequest because onLoadRequest doesn't load on about pages due to a GeckoView bug
             * We don't need to (and can't) check whether the URL was loaded by a link, whether the user entered the URL, or whether the browser opened it
             * This doesn't matter though - GeckoView blocks web pages from loading about URLs already

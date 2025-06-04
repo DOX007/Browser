@@ -484,7 +484,7 @@ class HomeFragment : Fragment() {
                         when(UserPreferences(requireContext()).homepageType){
                             HomepageChoice.VIEW.ordinal -> {
                                 components.tabsUseCases.addTab.invoke(
-                                    "about:homepage",
+                                    "about:home",
                                     selectTab = true
                                 )
                             }
@@ -507,7 +507,7 @@ class HomeFragment : Fragment() {
                         when(UserPreferences(requireContext()).homepageType){
                             HomepageChoice.VIEW.ordinal -> {
                                 components.tabsUseCases.addTab.invoke(
-                                    "about:homepage",
+                                    "about:home",
                                     selectTab = true,
                                     private = true
                                 )

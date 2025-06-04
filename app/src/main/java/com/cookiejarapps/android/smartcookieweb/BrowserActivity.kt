@@ -340,14 +340,25 @@ open class BrowserActivity : LocaleAwareAppCompatActivity(), ComponentCallbacks2
     }
 
     private fun load(
-            searchTermOrURL: String,
-            newTab: Boolean,
-            engine: SearchEngine?,
-            forceSearch: Boolean,
-            flags: EngineSession.LoadUrlFlags = EngineSession.LoadUrlFlags.none()
+        searchTermOrURL: String,
+        newTab: Boolean,
+        engine: SearchEngine?,
+        forceSearch: Boolean,
+        flags: EngineSession.LoadUrlFlags = EngineSession.LoadUrlFlags.none()
     ) {
+        // --- INTERCEPT "about:home" ---
+        if (searchTermOrURL == "about:home") {
+            // Navigera till HomeFragment (byt till rätt id om den har annat id i din navigation)
+            try {
+                navHost.navController.navigate(R.id.homeFragment)
+            } catch (e: IllegalArgumentException) {
+                // Om redan på HomeFragment, gör inget
+            }
+            return
+        }
+
         if ((!forceSearch && searchTermOrURL.isUrl()) || engine == null) {
-            if(newTab) {
+            if (newTab) {
                 components.tabsUseCases.addTab.invoke(
                     searchTermOrURL.toNormalizedUrl(),
                     flags = flags,
@@ -360,16 +371,17 @@ open class BrowserActivity : LocaleAwareAppCompatActivity(), ComponentCallbacks2
             if (newTab) {
                 components.searchUseCases.newTabSearch
                     .invoke(
-                            searchTermOrURL,
-                            SessionState.Source.Internal.UserEntered,
-                            true,
-                            searchEngine = engine
+                        searchTermOrURL,
+                        SessionState.Source.Internal.UserEntered,
+                        true,
+                        searchEngine = engine
                     )
             } else {
                 components.searchUseCases.defaultSearch.invoke(searchTermOrURL, engine)
             }
         }
     }
+
 
     override fun attachBaseContext(base: Context) {
         this.originalContext = base

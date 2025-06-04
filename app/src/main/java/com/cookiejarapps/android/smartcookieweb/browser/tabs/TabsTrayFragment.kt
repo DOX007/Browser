@@ -74,7 +74,7 @@ class TabsTrayFragment : Fragment() {
                             when (UserPreferences(requireContext()).homepageType) {
                                 HomepageChoice.VIEW.ordinal -> {
                                     components.tabsUseCases.addTab.invoke(
-                                        "about:homepage",
+                                        "about:home",
                                         selectTab = true
                                     )
                                 }
@@ -100,7 +100,7 @@ class TabsTrayFragment : Fragment() {
                             when (UserPreferences(requireContext()).homepageType) {
                                 HomepageChoice.VIEW.ordinal -> {
                                     components.tabsUseCases.addTab.invoke(
-                                        "about:homepage",
+                                        "about:home",
                                         selectTab = true,
                                         private = true
                                     )
@@ -199,9 +199,9 @@ class TabsTrayFragment : Fragment() {
                         if (tabs.size > 1) {
                             val nextTab = if (tabIndex == 0) tabs[1] else tabs[tabIndex - 1]
 
-                            if (nextTab.content.url == "about:homepage" && nextTab.content.url != components.store.state.selectedTab?.content?.url) {
+                            if (nextTab.content.url == "about:home" && nextTab.content.url != components.store.state.selectedTab?.content?.url) {
                                 requireContext().components.sessionUseCases.reload(nextTab.id)
-                            } else if (nextTab.content.url != "about:homepage") {
+                            } else if (nextTab.content.url != "about:home") {
                                 requireActivity().findNavController(R.id.container)
                                     .navigate(R.id.browserFragment)
                             }
@@ -275,7 +275,7 @@ class TabsTrayFragment : Fragment() {
                     components.tabsUseCases.selectTab(tab.id)
                     closeTabsTray()
 
-                    if (tab.content.url == "about:homepage") {
+                    if (tab.content.url == "about:home") {
                         // Homepage will not correctly set private / normal mode
                         if (tab.content.private && browsingModeManager.mode == BrowsingMode.Normal) {
                             browsingModeManager.mode = BrowsingMode.Private
@@ -301,9 +301,9 @@ class TabsTrayFragment : Fragment() {
                     if (tabs.size > 1 && components.store.state.selectedTabId == tab.id) {
                         val nextTab = if (tabIndex == 0) tabs[1] else tabs[tabIndex - 1]
 
-                        if (nextTab.content.url == "about:homepage" && nextTab.content.url != tab.content.url) {
+                        if (nextTab.content.url == "about:home" && nextTab.content.url != tab.content.url) {
                             requireContext().components.sessionUseCases.reload(nextTab.id)
-                        } else if (nextTab.content.url != "about:homepage") {
+                        } else if (nextTab.content.url != "about:home") {
                             requireActivity().findNavController(R.id.container)
                                 .navigate(R.id.browserFragment)
                         }
@@ -317,7 +317,7 @@ class TabsTrayFragment : Fragment() {
                         val lastNormalTab = components.store.state.normalTabs.last()
                         components.tabsUseCases.selectTab(lastNormalTab.id)
                         // Update private / normal status
-                        if (lastNormalTab.content.url == "about:homepage") {
+                        if (lastNormalTab.content.url == "about:home") {
                             requireContext().components.sessionUseCases.reload(lastNormalTab.id)
                         } else {
                             requireActivity().findNavController(R.id.container)
