@@ -23,8 +23,8 @@ import mozilla.components.support.ktx.android.net.hostWithoutCommonPrefixes
 import okhttp3.internal.wait
 
 internal class ShortcutGridAdapter(
-    private val context: Context,
-    private val shortcuts: MutableList<ShortcutEntity>
+        private val context: Context,
+        private val shortcuts: MutableList<ShortcutEntity>
 ) :
     BaseAdapter() {
     private var layoutInflater: LayoutInflater? = null
@@ -45,9 +45,9 @@ internal class ShortcutGridAdapter(
     }
 
     override fun getView(
-        position: Int,
-        convertView: View?,
-        parent: ViewGroup
+            position: Int,
+            convertView: View?,
+            parent: ViewGroup
     ): View {
         var convertView = convertView
         if (layoutInflater == null) {
