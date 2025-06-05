@@ -8,6 +8,6 @@
     <color name="toolbar_background">#5C5C5C</color>
     <color name="toolbar_private_outline">#B87CB8</color>
     <color name="statusbar_background">#222222</color>
-
+    <color name="teal_700">#00796B</color>
     <color name="selected_tab">#5e5e5e</color>
 </resources>
