@@ -218,6 +218,7 @@ class HomeFragment : Fragment() {
             }
         }
 
+
         binding.shortcutName.setOnClickListener {
             if(UserPreferences(requireContext()).shortcutDrawerOpen){
                 UserPreferences(requireContext()).shortcutDrawerOpen = false
@@ -397,6 +398,16 @@ class HomeFragment : Fragment() {
                 selectTabUseCase = components.tabsUseCases.selectTab
             )
         )
+        binding.powerOffFab.setOnClickListener {
+            AlertDialog.Builder(requireContext())
+                .setTitle("Stäng appen?")
+                .setMessage("Appen kommer att stängas helt.")
+                .setPositiveButton("OK") { _, _ ->
+                    requireActivity().finishAffinity()
+                }
+                .setNegativeButton("Avbryt", null)
+                .show()
+        }
 
         binding.menuButton.setColorFilter(
             ContextCompat.getColor(

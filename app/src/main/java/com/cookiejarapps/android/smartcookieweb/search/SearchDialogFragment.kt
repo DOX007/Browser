@@ -172,6 +172,17 @@ class SearchDialogFragment : AppCompatDialogFragment(), UserInteractionHandler {
                 }
         }
 
+        //#########  Koden som låser sökfälltet!##########
+        val urlView = toolbarView.view
+            .findViewById<InlineAutocompleteEditText>(R.id.mozac_browser_toolbar_edit_url_view)
+        // Lås fältet så att man inte kan skriva
+        urlView?.isFocusable = false
+        urlView?.isCursorVisible = false
+        urlView?.isLongClickable = false
+        urlView?.keyListener = null
+        //#########  Koden som låser sökfälltet!##########
+
+
         setupConstraints(view)
 
         // When displayed above browser, dismisses dialog on clicking scrim area

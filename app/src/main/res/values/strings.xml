@@ -3,6 +3,7 @@
   <string name="app_name" translatable="false">MA</string>
   <string name="url_project" translatable="false"></string>
 
+  <string name="power_off">Stäng av appen</string>
   <string name="key_javascript_enabled" translatable="false">javascript_enabled</string>
   <string name="key_app_theme_type" translatable="false">app_theme_type</string>
   <string name="key_web_theme_type" translatable="false">web_theme_type</string>

@@ -22,11 +22,6 @@
             android:fitsSystemWindows="false"
             app:elevation="0dp">
 
-
-
-
-
-
         </com.google.android.material.appbar.AppBarLayout>
 
         <LinearLayout
@@ -172,5 +167,18 @@
             android:clickable="false"
             android:focusable="false"
             android:visibility="gone" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/powerOffFab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="24dp"
+            android:src="@drawable/outline_arrow_circle_right_24"
+            android:contentDescription="@string/power_off"
+            app:backgroundTint="@color/red"
+            app:layout_anchorGravity="bottom|end"
+            app:tint="@android:color/white"/>
+
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </com.cookiejarapps.android.smartcookieweb.browser.SwipeGestureLayout>
