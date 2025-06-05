@@ -48,7 +48,7 @@
     </activity>
 
     <activity
-        android:name="com.cookiejarapps.android.smartcookieweb.browser.home.MapsActivity"
+        android:name="com.cookiejarapps.android.smartcookieweb.browser.MapsActivity"
         android:exported="false"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
 

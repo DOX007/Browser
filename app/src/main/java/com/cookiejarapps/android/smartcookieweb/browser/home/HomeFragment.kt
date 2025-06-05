@@ -39,6 +39,17 @@ import mozilla.components.browser.menu.view.MenuButton
 import mozilla.components.ui.tabcounter.TabCounter
 import java.lang.ref.WeakReference
 
+// ↓ Lägg till dessa imports för att undvika "Unresolved reference":
+import com.cookiejarapps.android.smartcookieweb.ext.components
+import com.cookiejarapps.android.smartcookieweb.ext.nav
+import mozilla.components.lib.state.ext.consumeFlow
+import mozilla.components.lib.state.ext.consumeFrom
+import mozilla.components.browser.state.store.BrowserStore
+
+// ↓ Importera den nya MapsActivity-klassen:
+import com.cookiejarapps.android.smartcookieweb.browser.MapsActivity
+
+@VisibleForTesting
 class HomeFragment : Fragment() {
     private var database: ShortcutDatabase? = null
 
@@ -47,6 +58,7 @@ class HomeFragment : Fragment() {
 
     private val browsingModeManager get() = (activity as BrowserActivity).browsingModeManager
 
+    // använder BrowserStore från Mozilla Components
     private val store: BrowserStore
         get() = components.store
 
@@ -71,6 +83,7 @@ class HomeFragment : Fragment() {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val view = binding.root
 
+        // Se till att "components" kommer från context-extension
         activity as BrowserActivity
         val components = requireContext().components
 
@@ -123,7 +136,7 @@ class HomeFragment : Fragment() {
                 .show()
         }
 
-        // Här kopplar vi btn_map till den nya MapsActivity
+        // ↓ Här kopplar vi btn_map till den nya MapsActivity
         binding.btnMap.setOnClickListener {
             val intent = Intent(requireContext(), MapsActivity::class.java)
             startActivity(intent)
@@ -144,15 +157,15 @@ class HomeFragment : Fragment() {
             openTabDrawer()
         }
 
-        /* Resten av observeFrom/store‐logiken, osv... */
+        // Resten av observeFrom/store‐logiken osv.
         if (browsingModeManager.mode.isPrivate) {
             requireActivity().window.addFlags(FLAG_SECURE)
         } else {
             requireActivity().window.clearFlags(FLAG_SECURE)
         }
 
-        consumeFrom(components.store) {
-            updateTabCounter(it)
+        consumeFrom(components.store) { state ->
+            updateTabCounter(state)
         }
 
         updateTabCounter(components.store.state)
@@ -168,6 +181,7 @@ class HomeFragment : Fragment() {
         appBarLayout = null
         bundleArgs.clear()
         requireActivity().window.clearFlags(FLAG_SECURE)
+        _binding = null
     }
 
     private fun navigateToSearch() {
@@ -176,6 +190,7 @@ class HomeFragment : Fragment() {
                 sessionId = null
             )
 
+        // Se till att du har import: com.cookiejarapps.android.smartcookieweb.ext.nav
         nav(R.id.homeFragment, directions, null)
     }
 
