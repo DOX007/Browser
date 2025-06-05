@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="open_map">Öppna karta</string>
     <string name="more">更多信息</string>
     <string name="version">应用版本</string>
     <string name="licenses">开放源代码许可证</string>

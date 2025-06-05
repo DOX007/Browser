@@ -180,5 +180,16 @@
             app:layout_anchorGravity="bottom|end"
             app:tint="@android:color/white"/>
 
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btn_map"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|start"
+            android:layout_margin="24dp"
+            android:src="@drawable/ic_baseline_map_24"
+        android:contentDescription="@string/open_map"
+        app:backgroundTint="@color/teal_700"
+        app:tint="@android:color/white"/>
+
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </com.cookiejarapps.android.smartcookieweb.browser.SwipeGestureLayout>

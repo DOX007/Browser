@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
+  <string name="open_map">Öppna karta</string>
   <string name="more">Plus d’informations</string>
   <string name="version">Version de l’application</string>
   <string name="licenses">Licences open-source</string>
