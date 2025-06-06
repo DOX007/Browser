@@ -34,7 +34,13 @@ import org.json.JSONObject
 import java.net.URL
 import javax.net.ssl.HttpsURLConnection
 import kotlin.concurrent.thread
-import com.google.android.gms.maps.model.PointOfInterest
+import android.text.SpannableString
+import android.text.method.LinkMovementMethod
+import android.text.style.ClickableSpan
+import android.view.View
+import android.widget.TextView
+import android.content.Intent
+import android.net.Uri
 import androidx.appcompat.app.AlertDialog
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -186,15 +192,35 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     info.append("Öppettider:\n")
                     place.openingHours?.weekdayText?.forEach { line -> info.append("$line\n") }
                 }
-                info.append("\n\nVill du navigera hit?")
-                AlertDialog.Builder(this)
-                    .setTitle(place.name ?: fallbackName)
-                    .setMessage(info.toString())
-                    .setPositiveButton("Navigera") { _, _ ->
-                        moveToMyLocationAndDrawRoute(place.latLng!!)
+                info.append("\n\nSenaste tillgänliga informationen")
+
+                val message = SpannableString(info.toString())
+
+                // Gör telefonnumret klickbart
+                if (place.phoneNumber != null) {
+                    val phone = place.phoneNumber!!
+                    val start = info.indexOf("Telefon: ") + "Telefon: ".length
+                    val end = start + phone.length
+                    if (start >= "Namn: ${place.name ?: fallbackName}\nAdress: ${place.address ?: "-"}\n".length && end <= message.length) {
+                        message.setSpan(object : ClickableSpan() {
+                            override fun onClick(widget: View) {
+                                val intent = Intent(Intent.ACTION_DIAL)
+                                intent.data = Uri.parse("tel:$phone")
+                                widget.context.startActivity(intent)
+                            }
+                        }, start, end, 0)
                     }
+                }
+
+                val dialog = AlertDialog.Builder(this)
+                    .setTitle(place.name ?: fallbackName)
+                    .setMessage(message)
                     .setNegativeButton("Stäng", null)
-                    .show()
+                    .create()
+                dialog.show()
+
+                // Gör länkar klickbara
+                (dialog.findViewById<TextView>(android.R.id.message))?.movementMethod = LinkMovementMethod.getInstance()
             }
             .addOnFailureListener {
                 AlertDialog.Builder(this)
@@ -204,6 +230,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     .show()
             }
     }
+
 
     private fun moveToMyLocationAndDrawRoute(destination: LatLng) {
         val origin = lastKnownLocation
