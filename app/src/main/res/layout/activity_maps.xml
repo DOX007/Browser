@@ -1,23 +1,28 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:map="http://schemas.android.com/apk/res-auto"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Maps-fragmentet fyller hela skärmen -->
+    <!-- Maps-fragmentet underliggande -->
     <fragment
         android:id="@+id/map_fragment"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
-    <!-- Menyknapp för karttyp -->
+    <!-- Karta/Layer-typ knapp, bättre placerad -->
     <Button
         android:id="@+id/btn_maptype"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Karttyp"
-        android:layout_gravity="top|end"
-        android:layout_margin="16dp"
+        android:text="Satellit"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="16dp"
         android:background="@drawable/rounded_button"
         android:textColor="@android:color/white"/>
-</FrameLayout>
+
+    <!-- Om du vill ha fler knappar/floating controls, lägg dem på liknande sätt -->
+
+</RelativeLayout>

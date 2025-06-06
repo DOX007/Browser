@@ -13,27 +13,36 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.cookiejarapps.android.smartcookieweb.R
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import android.location.Location
+
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var googleMap: GoogleMap
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
     private val LOCATION_PERMISSION_REQUEST_CODE = 1001
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
 
+        // Initiera fusedLocationClient för exakt position
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+        // Karta
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map_fragment) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
-        // Sätt knappens default-text till "Satellit"
+        // Karttyp-knapp
         val btnMapType = findViewById<Button>(R.id.btn_maptype)
         btnMapType.text = "Satellit"
         btnMapType.setOnClickListener {
@@ -52,29 +61,56 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
 
-        // Sätt standard till "Satellit" om aktuell typ är normal (första gången)
-        val btnMapType = findViewById<Button>(R.id.btn_maptype)
-        btnMapType.text = if (googleMap.mapType == GoogleMap.MAP_TYPE_NORMAL) "Satellit" else "Standard"
+        // Karta POI-klick för att visa info och navigera
+        googleMap.setOnPoiClickListener { poi ->
+            googleMap.clear()
+            val marker = googleMap.addMarker(
+                MarkerOptions().position(poi.latLng).title(poi.name)
+            )
+            marker?.showInfoWindow()
 
-        // Lyssna på kartklick för navigering
-        googleMap.setOnMapClickListener { latLng ->
-            googleMap.clear() // Rensa gamla markörer
-            googleMap.addMarker(MarkerOptions().position(latLng).title("Navigera hit"))
+            AlertDialog.Builder(this)
+                .setTitle(poi.name)
+                .setMessage("Vill du navigera hit?")
+                .setPositiveButton("Ja") { _, _ ->
+                    openGoogleMapsNavigation(poi.latLng)
+                }
+                .setNegativeButton("Nej", null)
+                .show()
+        }
+
+        // Långtryck för att sätta markör och navigera
+        googleMap.setOnMapLongClickListener { latLng ->
+            googleMap.clear()
+            googleMap.addMarker(
+                MarkerOptions().position(latLng).title("Navigera hit")
+            )?.showInfoWindow()
+
             showNavigateDialog(latLng)
         }
 
-        // Platsbehörighetslogik
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-
+        // Visa användarens exakta position direkt
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
             googleMap.isMyLocationEnabled = true
-            val fallback = LatLng(59.3293, 18.0686) // Stockholm
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(fallback, 12f))
-
+            fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+                if (location != null) {
+                    val userLatLng = LatLng(location.latitude, location.longitude)
+                    googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLatLng, 16f))
+                } else {
+                    val fallback = LatLng(59.3293, 18.0686)
+                    googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(fallback, 12f))
+                }
+            }
         } else {
-            ActivityCompat.requestPermissions(this,
+            ActivityCompat.requestPermissions(
+                this,
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                LOCATION_PERMISSION_REQUEST_CODE)
+                LOCATION_PERMISSION_REQUEST_CODE
+            )
         }
     }
 
@@ -87,17 +123,20 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
             if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                if (ContextCompat.checkSelfPermission(this,
-                        Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                if (ContextCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                    ) == PackageManager.PERMISSION_GRANTED
+                ) {
                     googleMap.isMyLocationEnabled = true
-
-                    val userLocation: Location? = googleMap.myLocation
-                    if (userLocation != null) {
-                        val userLatLng = LatLng(userLocation.latitude, userLocation.longitude)
-                        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLatLng, 14f))
-                    } else {
-                        val fallback = LatLng(59.3293, 18.0686)
-                        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(fallback, 12f))
+                    fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+                        if (location != null) {
+                            val userLatLng = LatLng(location.latitude, location.longitude)
+                            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLatLng, 16f))
+                        } else {
+                            val fallback = LatLng(59.3293, 18.0686)
+                            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(fallback, 12f))
+                        }
                     }
                 }
             } else {
@@ -107,7 +146,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    // Visa dialog för navigation
+    // Dialog för navigering till långtryckt punkt
     private fun showNavigateDialog(latLng: LatLng) {
         AlertDialog.Builder(this)
             .setTitle("Navigera hit")
