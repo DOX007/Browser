@@ -146,24 +146,20 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         })
 
-        val mapFragment = supportFragmentManager
-            .findFragmentById(R.id.map_fragment) as SupportMapFragment
-        mapFragment.getMapAsync(this)
+        val btnMapType = findViewById<ImageButton>(R.id.btn_maptype)
+        btnMapType.setImageResource(R.drawable.outline_navigation_24)
 
-        val btnMapType = findViewById<Button>(R.id.btn_maptype)
-        btnMapType.text = "Satellit"
         btnMapType.setOnClickListener {
             if (::googleMap.isInitialized) {
                 if (googleMap.mapType == GoogleMap.MAP_TYPE_NORMAL) {
                     googleMap.mapType = GoogleMap.MAP_TYPE_SATELLITE
-                    btnMapType.text = "Standard"
+                    btnMapType.setImageResource(R.drawable.baseline_satellite_alt_24)
                 } else {
                     googleMap.mapType = GoogleMap.MAP_TYPE_NORMAL
-                    btnMapType.text = "Satellit"
+                    btnMapType.setImageResource(R.drawable.outline_navigation_24)
                 }
             }
         }
-    }
 
     private fun drawRouteTo(destination: LatLng) {
         val origin = googleMap.myLocation
@@ -311,3 +307,4 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 }
+
