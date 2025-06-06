@@ -35,6 +35,7 @@ import java.net.URL
 import javax.net.ssl.HttpsURLConnection
 import kotlin.concurrent.thread
 import com.google.android.gms.maps.model.PointOfInterest
+import androidx.appcompat.app.AlertDialog
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -125,7 +126,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
+        googleMap.setOnPoiClickListener { poi ->
+            googleMap.clear()
+            googleMap.addMarker(MarkerOptions().position(poi.latLng).title(poi.name))?.showInfoWindow()
+            fetchPoiDetailsAndShow(poi.placeId, poi.name)
+        }
 
+        googleMap.setOnMapLongClickListener { latLng ->
+            googleMap.clear()
+            googleMap.addMarker(MarkerOptions().position(latLng).title("Navigera hit"))
+            moveToMyLocationAndDrawRoute(latLng)
+        }
         if (ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -152,6 +163,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             moveToMyLocationAndDrawRoute(latLng)
         }
     }
+
     private fun fetchPoiDetailsAndShow(placeId: String, fallbackName: String) {
         val fields = listOf(
             Place.Field.NAME,
