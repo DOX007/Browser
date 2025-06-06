@@ -39,7 +39,7 @@ import androidx.appcompat.app.AlertDialog
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
-
+    private var selectedPoiLatLng: LatLng? = null
     private lateinit var googleMap: GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var placesClient: PlacesClient
@@ -126,7 +126,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
+
         googleMap.setOnPoiClickListener { poi ->
+            selectedPoiLatLng = poi.latLng // Spara koordinaten!
             googleMap.clear()
             googleMap.addMarker(MarkerOptions().position(poi.latLng).title(poi.name))?.showInfoWindow()
             fetchPoiDetailsAndShow(poi.placeId, poi.name)
@@ -137,6 +139,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             googleMap.addMarker(MarkerOptions().position(latLng).title("Navigera hit"))
             moveToMyLocationAndDrawRoute(latLng)
         }
+
         if (ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -155,12 +158,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                 LOCATION_PERMISSION_REQUEST_CODE
             )
-        }
-
-        googleMap.setOnMapLongClickListener { latLng ->
-            googleMap.clear()
-            googleMap.addMarker(MarkerOptions().position(latLng).title("Navigera hit"))
-            moveToMyLocationAndDrawRoute(latLng)
         }
     }
 
