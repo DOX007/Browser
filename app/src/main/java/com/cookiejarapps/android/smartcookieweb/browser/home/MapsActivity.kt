@@ -9,9 +9,11 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.inputmethod.EditorInfo
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -23,14 +25,18 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.AutocompletePrediction
 import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.api.model.RectangularBounds
 import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
 import com.google.android.libraries.places.api.net.PlacesClient
+import org.json.JSONObject
+import java.net.URL
+import javax.net.ssl.HttpsURLConnection
+import kotlin.concurrent.thread
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -41,25 +47,21 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private var predictionList: List<AutocompletePrediction> = emptyList()
 
     private val LOCATION_PERMISSION_REQUEST_CODE = 1001
+    private val directionsApiKey = "AIzaSyDi-yYdHhrsyvpdl-lrICWv2XNdusxoVz4" // samma API-nyckel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
 
-        // 1. Initiera Google Places SDK
-        Places.initialize(applicationContext, "AIzaSyDi-yYdHhrsyvpdl-lrICWv2XNdusxoVz4")
+        Places.initialize(applicationContext, directionsApiKey)
         placesClient = Places.createClient(this)
-
-        // 2. Initiera fusedLocationClient
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        // 3. Setup sökfältet
         searchInput = findViewById(R.id.search_input)
         val adapter = ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line)
         searchInput.setAdapter(adapter)
         searchInput.threshold = 1
 
-        // 4. Lyssna på val i listan
         searchInput.setOnItemClickListener { _, _, position, _ ->
             val prediction = predictionList[position]
             val placeId = prediction.placeId
@@ -68,21 +70,47 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             val request = FetchPlaceRequest.builder(placeId, placeFields).build()
             placesClient.fetchPlace(request).addOnSuccessListener { response ->
                 val place = response.place
-                place.latLng?.let { latLng ->
+                place.latLng?.let { destination ->
                     googleMap.clear()
-                    googleMap.addMarker(MarkerOptions().position(latLng).title(place.name))
-                    googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16f))
-                    showNavigateDialog(latLng)
+                    googleMap.addMarker(MarkerOptions().position(destination).title(place.name))
+                    googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(destination, 16f))
+                    drawRouteTo(destination)
                 }
             }
         }
 
-        // 5. Textändringar för autosuggest
         searchInput.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {}
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 val query = s.toString()
+                if (query.isNotEmpty()) {
+                    val myLocation = googleMap.myLocation
+                    if (myLocation != null) {
+                        val center = LatLng(myLocation.latitude, myLocation.longitude)
+                        val bounds = RectangularBounds.newInstance(
+                            LatLng(center.latitude - 0.05, center.longitude - 0.05),
+                            LatLng(center.latitude + 0.05, center.longitude + 0.05)
+                        )
+                        val request = FindAutocompletePredictionsRequest.builder()
+                            .setQuery(query)
+                            .setLocationBias(bounds)
+                            .build()
+                        placesClient.findAutocompletePredictions(request)
+                            .addOnSuccessListener { response ->
+                                predictionList = response.autocompletePredictions
+                                adapter.clear()
+                                adapter.addAll(predictionList.map { it.getFullText(null).toString() })
+                                adapter.notifyDataSetChanged()
+                            }
+                    }
+                }
+            }
+        })
+
+        searchInput.setOnEditorActionListener(TextView.OnEditorActionListener { v, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_SEARCH) {
+                val query = v.text.toString()
                 if (query.isNotEmpty()) {
                     val request = FindAutocompletePredictionsRequest.builder()
                         .setQuery(query)
@@ -90,20 +118,38 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     placesClient.findAutocompletePredictions(request)
                         .addOnSuccessListener { response ->
                             predictionList = response.autocompletePredictions
-                            adapter.clear()
-                            adapter.addAll(predictionList.map { it.getFullText(null).toString() })
-                            adapter.notifyDataSetChanged()
+                            if (predictionList.isNotEmpty()) {
+                                val top = predictionList[0]
+                                val placeId = top.placeId
+                                val placeFields = listOf(Place.Field.LAT_LNG, Place.Field.NAME)
+                                val fetchRequest = FetchPlaceRequest.builder(placeId, placeFields).build()
+                                placesClient.fetchPlace(fetchRequest)
+                                    .addOnSuccessListener { fetchResponse ->
+                                        val place = fetchResponse.place
+                                        place.latLng?.let { destination ->
+                                            googleMap.clear()
+                                            googleMap.addMarker(
+                                                MarkerOptions().position(destination).title(place.name)
+                                            )
+                                            googleMap.animateCamera(
+                                                CameraUpdateFactory.newLatLngZoom(destination, 16f)
+                                            )
+                                            drawRouteTo(destination)
+                                        }
+                                    }
+                            }
                         }
                 }
+                true
+            } else {
+                false
             }
         })
 
-        // 6. Karta
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map_fragment) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
-        // 7. Karttyp-knapp
         val btnMapType = findViewById<Button>(R.id.btn_maptype)
         btnMapType.text = "Satellit"
         btnMapType.setOnClickListener {
@@ -119,38 +165,96 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    private fun drawRouteTo(destination: LatLng) {
+        val origin = googleMap.myLocation
+        if (origin != null) {
+            val originStr = "${origin.latitude},${origin.longitude}"
+            val destinationStr = "${destination.latitude},${destination.longitude}"
+            val url = "https://maps.googleapis.com/maps/api/directions/json?origin=$originStr&destination=$destinationStr&key=$directionsApiKey"
+
+            thread {
+                val conn = URL(url).openConnection() as HttpsURLConnection
+                conn.requestMethod = "GET"
+                val response = conn.inputStream.bufferedReader().readText()
+                val json = JSONObject(response)
+                val points = mutableListOf<LatLng>()
+                val steps = json
+                    .getJSONArray("routes")
+                    .getJSONObject(0)
+                    .getJSONObject("overview_polyline")
+                    .getString("points")
+                points.addAll(decodePolyline(steps))
+
+                runOnUiThread {
+                    val polylineOptions = PolylineOptions()
+                        .addAll(points)
+                        .color(ContextCompat.getColor(this, R.color.teal_700))
+                        .width(10f)
+                    googleMap.addPolyline(polylineOptions)
+                }
+            }
+        }
+    }
+
+    private fun decodePolyline(encoded: String): List<LatLng> {
+        val poly = ArrayList<LatLng>()
+        var index = 0
+        val len = encoded.length
+        var lat = 0
+        var lng = 0
+
+        while (index < len) {
+            var b: Int
+            var shift = 0
+            var result = 0
+            do {
+                b = encoded[index++].code - 63
+                result = result or (b and 0x1f shl shift)
+                shift += 5
+            } while (b >= 0x20)
+            val dlat = if (result and 1 != 0) (result shr 1).inv() else result shr 1
+            lat += dlat
+
+            shift = 0
+            result = 0
+            do {
+                b = encoded[index++].code - 63
+                result = result or (b and 0x1f shl shift)
+                shift += 5
+            } while (b >= 0x20)
+            val dlng = if (result and 1 != 0) (result shr 1).inv() else result shr 1
+            lng += dlng
+
+            val latLng = LatLng(
+                lat.toDouble() / 1E5,
+                lng.toDouble() / 1E5
+            )
+            poly.add(latLng)
+        }
+
+        return poly
+    }
+
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
 
-        // POI-klick
         googleMap.setOnPoiClickListener { poi ->
             googleMap.clear()
             val marker = googleMap.addMarker(
                 MarkerOptions().position(poi.latLng).title(poi.name)
             )
             marker?.showInfoWindow()
-
-            AlertDialog.Builder(this)
-                .setTitle(poi.name)
-                .setMessage("Vill du navigera hit?")
-                .setPositiveButton("Ja") { _, _ ->
-                    openGoogleMapsNavigation(poi.latLng)
-                }
-                .setNegativeButton("Nej", null)
-                .show()
+            drawRouteTo(poi.latLng)
         }
 
-        // Långtryck för att navigera
         googleMap.setOnMapLongClickListener { latLng ->
             googleMap.clear()
             googleMap.addMarker(
                 MarkerOptions().position(latLng).title("Navigera hit")
             )?.showInfoWindow()
-
-            showNavigateDialog(latLng)
+            drawRouteTo(latLng)
         }
 
-        // Användarens plats
         if (ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -204,28 +308,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 val fallback = LatLng(59.3293, 18.0686)
                 googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(fallback, 12f))
             }
-        }
-    }
-
-    private fun showNavigateDialog(latLng: LatLng) {
-        AlertDialog.Builder(this)
-            .setTitle("Navigera hit")
-            .setMessage("Vill du starta navigering till denna plats?")
-            .setPositiveButton("Ja") { _, _ ->
-                openGoogleMapsNavigation(latLng)
-            }
-            .setNegativeButton("Nej", null)
-            .show()
-    }
-
-    private fun openGoogleMapsNavigation(latLng: LatLng) {
-        val uri = "google.navigation:q=${latLng.latitude},${latLng.longitude}"
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
-        intent.setPackage("com.google.android.apps.maps")
-        if (intent.resolveActivity(packageManager) != null) {
-            startActivity(intent)
-        } else {
-            Toast.makeText(this, "Google Maps är inte installerat.", Toast.LENGTH_SHORT).show()
         }
     }
 }
