@@ -30,9 +30,10 @@
       android:supportsRtl="true"
       android:theme="@style/AppThemeNotActionBar">
 
+    <!-- Din API-nyckel är KVAR -->
     <meta-data
         android:name="com.google.android.geo.API_KEY"
-        android:value="AIzaSyDi-yYdHhrsyvpdl-lrICWv2XNdusxoVz4" />
+        android:value="AIzaSyDi-yYegcThYvpdl-lrICWv2XNdusxoVz4" />
 
     <activity
         android:name=".BrowserActivity"
@@ -47,8 +48,9 @@
       </intent-filter>
     </activity>
 
+    <!-- ENDA ändringen nedan! -->
     <activity
-        android:name="com.cookiejarapps.android.smartcookieweb.browser.MapsActivity"
+        android:name="com.cookiejarapps.android.smartcookieweb.browser.home.MapsActivity"
         android:exported="false"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
 
