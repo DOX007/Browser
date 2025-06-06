@@ -7,6 +7,10 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.net.Uri
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -21,28 +25,85 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
-import android.location.Location
-
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.AutocompletePrediction
+import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.api.net.FetchPlaceRequest
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
+import com.google.android.libraries.places.api.net.PlacesClient
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var googleMap: GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var placesClient: PlacesClient
+    private lateinit var searchInput: AutoCompleteTextView
+    private var predictionList: List<AutocompletePrediction> = emptyList()
+
     private val LOCATION_PERMISSION_REQUEST_CODE = 1001
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
 
-        // Initiera fusedLocationClient för exakt position
+        // 1. Initiera Google Places SDK
+        Places.initialize(applicationContext, "AIzaSyDi-yYdHhrsyvpdl-lrICWv2XNdusxoVz4")
+        placesClient = Places.createClient(this)
+
+        // 2. Initiera fusedLocationClient
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        // Karta
+        // 3. Setup sökfältet
+        searchInput = findViewById(R.id.search_input)
+        val adapter = ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line)
+        searchInput.setAdapter(adapter)
+        searchInput.threshold = 1
+
+        // 4. Lyssna på val i listan
+        searchInput.setOnItemClickListener { _, _, position, _ ->
+            val prediction = predictionList[position]
+            val placeId = prediction.placeId
+            val placeFields = listOf(Place.Field.LAT_LNG, Place.Field.NAME)
+
+            val request = FetchPlaceRequest.builder(placeId, placeFields).build()
+            placesClient.fetchPlace(request).addOnSuccessListener { response ->
+                val place = response.place
+                place.latLng?.let { latLng ->
+                    googleMap.clear()
+                    googleMap.addMarker(MarkerOptions().position(latLng).title(place.name))
+                    googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16f))
+                    showNavigateDialog(latLng)
+                }
+            }
+        }
+
+        // 5. Textändringar för autosuggest
+        searchInput.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {}
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                val query = s.toString()
+                if (query.isNotEmpty()) {
+                    val request = FindAutocompletePredictionsRequest.builder()
+                        .setQuery(query)
+                        .build()
+                    placesClient.findAutocompletePredictions(request)
+                        .addOnSuccessListener { response ->
+                            predictionList = response.autocompletePredictions
+                            adapter.clear()
+                            adapter.addAll(predictionList.map { it.getFullText(null).toString() })
+                            adapter.notifyDataSetChanged()
+                        }
+                }
+            }
+        })
+
+        // 6. Karta
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map_fragment) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
-        // Karttyp-knapp
+        // 7. Karttyp-knapp
         val btnMapType = findViewById<Button>(R.id.btn_maptype)
         btnMapType.text = "Satellit"
         btnMapType.setOnClickListener {
@@ -61,7 +122,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
 
-        // Karta POI-klick för att visa info och navigera
+        // POI-klick
         googleMap.setOnPoiClickListener { poi ->
             googleMap.clear()
             val marker = googleMap.addMarker(
@@ -79,7 +140,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 .show()
         }
 
-        // Långtryck för att sätta markör och navigera
+        // Långtryck för att navigera
         googleMap.setOnMapLongClickListener { latLng ->
             googleMap.clear()
             googleMap.addMarker(
@@ -89,7 +150,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             showNavigateDialog(latLng)
         }
 
-        // Visa användarens exakta position direkt
+        // Användarens plats
         if (ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -146,7 +207,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    // Dialog för navigering till långtryckt punkt
     private fun showNavigateDialog(latLng: LatLng) {
         AlertDialog.Builder(this)
             .setTitle("Navigera hit")
@@ -158,7 +218,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             .show()
     }
 
-    // Öppna navigation i Google Maps-app
     private fun openGoogleMapsNavigation(latLng: LatLng) {
         val uri = "google.navigation:q=${latLng.latitude},${latLng.longitude}"
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
