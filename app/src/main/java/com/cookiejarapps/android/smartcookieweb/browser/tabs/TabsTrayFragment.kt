@@ -310,19 +310,31 @@ class TabsTrayFragment : Fragment() {
                         components.tabsUseCases.removeTab(tab.id)
                     } else if (tabs.size == 1 && configuration.browserTabType == BrowserTabType.NORMAL) {
                         components.tabsUseCases.removeTab(tab.id)
-                        requireActivity().finishAndRemoveTask()
+                        if (requireActivity().findNavController(R.id.container).currentDestination?.id != R.id.homeFragment) {
+                            requireActivity().findNavController(R.id.container).navigate(R.id.homeFragment)
+                        }
                     } else if (tabs.size == 1 && configuration.browserTabType == BrowserTabType.PRIVATE) {
                         components.tabsUseCases.removeTab(tab.id)
                         browsingModeManager.mode = BrowsingMode.Normal
-                        val lastNormalTab = components.store.state.normalTabs.last()
-                        components.tabsUseCases.selectTab(lastNormalTab.id)
-                        // Update private / normal status
-                        if (lastNormalTab.content.url == "about:home") {
-                            requireContext().components.sessionUseCases.reload(lastNormalTab.id)
+
+                        if (components.store.state.normalTabs.isEmpty()) {
+                            // Gå till hemskärmen om inga normala tabs heller finns
+                            if (requireActivity().findNavController(R.id.container).currentDestination?.id != R.id.homeFragment) {
+                                requireActivity().findNavController(R.id.container).navigate(R.id.homeFragment)
+                            }
                         } else {
-                            requireActivity().findNavController(R.id.container)
-                                .navigate(R.id.browserFragment)
+                            val lastNormalTab = components.store.state.normalTabs.last()
+                            components.tabsUseCases.selectTab(lastNormalTab.id)
+
+                            if (lastNormalTab.content.url == "about:home") {
+                                requireContext().components.sessionUseCases.reload(lastNormalTab.id)
+                            } else {
+                                requireActivity().findNavController(R.id.container)
+                                    .navigate(R.id.browserFragment)
+                            }
                         }
+
+// ✅ Här slutar PRIVATE-grenen
                     } else {
                         components.tabsUseCases.removeTab(tab.id)
                     }
