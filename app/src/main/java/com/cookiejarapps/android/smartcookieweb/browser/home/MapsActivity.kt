@@ -1,5 +1,6 @@
 package com.cookiejarapps.android.smartcookieweb.browser.home
 
+import android.graphics.Color
 import android.Manifest
 import android.content.pm.PackageManager
 import android.location.Location
@@ -274,8 +275,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     googleMap.addPolyline(
                         PolylineOptions()
                             .addAll(points)
-                            .color(ContextCompat.getColor(this, R.color.teal_700))
-                            .width(10f)
+                            .color(Color.BLUE)    // Ändra till blå (Androids fördefinierade blå)
+                            .width(16f)
                     )
                 }
             } else {

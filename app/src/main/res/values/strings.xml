@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+  <string name="route_car">Bil</string>
+  <string name="route_walk">Till fots</string>
+  <string name="maptype">Karttyp</string>
   <string name="app_name" translatable="false">MA</string>
   <string name="url_project" translatable="false"></string>
   <string name="open_map">Öppna karta</string>
