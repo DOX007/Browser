@@ -61,6 +61,22 @@
             android:clickable="true" />
     </RelativeLayout>
 
+    <!-- Overlay för restid & distans, flytande uppe till höger -->
+    <TextView
+        android:id="@+id/route_info_overlay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#CC333333"
+        android:textColor="#FFF"
+        android:textSize="18sp"
+        android:padding="12dp"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="70dp"
+        android:layout_marginEnd="16dp"
+        android:elevation="10dp"
+        android:visibility="gone"
+        android:text=""/>
+
     <!-- Vertikal stack med knappar nere till höger -->
     <LinearLayout
         android:id="@+id/maps_button_stack"
@@ -103,7 +119,5 @@
             android:src="@drawable/ic_baseline_directions_walk_24"
             android:contentDescription="@string/route_walk"
             android:tint="@android:color/white"/>
-
-
     </LinearLayout>
 </FrameLayout>

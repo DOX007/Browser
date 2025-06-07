@@ -46,6 +46,7 @@ import androidx.appcompat.app.AlertDialog
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
+    private lateinit var routeInfoOverlay: TextView
     private var travelMode: String = "driving"
     private var selectedPoiLatLng: LatLng? = null
     private lateinit var googleMap: GoogleMap
@@ -63,7 +64,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
         window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-
+        routeInfoOverlay = findViewById(R.id.route_info_overlay)
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         Places.initialize(applicationContext, API_KEY)
@@ -113,6 +114,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         })
 
         searchInput.setOnItemClickListener { _, _, position, _ ->
+            // Stäng tangentbordet direkt när användaren väljer en plats
+            val imm = getSystemService(INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+            imm.hideSoftInputFromWindow(searchInput.windowToken, 0)
+
             val placeId = predictionList[position].placeId
             val placeFields = listOf(Place.Field.LAT_LNG)
             placesClient.fetchPlace(FetchPlaceRequest.builder(placeId, placeFields).build())
@@ -122,6 +127,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         googleMap.addMarker(MarkerOptions().position(destination).title("Destination"))
                         moveToMyLocationAndDrawRoute(destination)
                     }
+
                 }
         }
 
@@ -204,16 +210,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             .addOnSuccessListener { response ->
                 val place = response.place
                 val info = StringBuilder()
-                info.append("Namn: ${place.name ?: fallbackName}\n")
-                info.append("Adress: ${place.address ?: "-"}\n")
-                if (place.phoneNumber != null) info.append("Telefon: ${place.phoneNumber}\n")
+                info.append("Name: ${place.name ?: fallbackName}\n")
+                info.append("Address: ${place.address ?: "-"}\n")
+                if (place.phoneNumber != null) info.append("Phone: ${place.phoneNumber}\n")
                 if (place.websiteUri != null) info.append("Webb: ${place.websiteUri}\n")
-                if (place.rating != null) info.append("Betyg: ${place.rating} (${place.userRatingsTotal} röster)\n")
+                if (place.rating != null) info.append("Rating: ${place.rating} (${place.userRatingsTotal} röster)\n")
                 if (place.openingHours != null) {
-                    info.append("Öppettider:\n")
+                    info.append("Open:\n")
                     place.openingHours?.weekdayText?.forEach { line -> info.append("$line\n") }
                 }
-                info.append("\n\nSenaste tillgänliga informationen")
+                info.append("\n\nLatest available information")
 
                 val message = SpannableString(info.toString())
 
@@ -236,7 +242,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 val dialog = AlertDialog.Builder(this)
                     .setTitle(place.name ?: fallbackName)
                     .setMessage(message)
-                    .setNegativeButton("Stäng", null)
+                    .setNegativeButton("Ok", null)
                     .create()
                 dialog.show()
 
@@ -274,8 +280,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val originStr = "${origin.latitude},${origin.longitude}"
         val destinationStr = "${destination.latitude},${destination.longitude}"
         val url =
-        "https://maps.googleapis.com/maps/api/directions/json?origin=$originStr&destination=$destinationStr&mode=$travelMode&key=$API_KEY"
-
+            "https://maps.googleapis.com/maps/api/directions/json?origin=$originStr&destination=$destinationStr&mode=$travelMode&key=$API_KEY"
 
         thread {
             val conn = URL(url).openConnection() as HttpsURLConnection
@@ -284,8 +289,18 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             val json = JSONObject(response)
             val routes = json.optJSONArray("routes")
             if (routes != null && routes.length() > 0) {
+                val route = routes.getJSONObject(0)
+                val legs = route.optJSONArray("legs")
+                var durationText = ""
+                var distanceText = ""
+                if (legs != null && legs.length() > 0) {
+                    val leg = legs.getJSONObject(0)
+                    durationText = leg.getJSONObject("duration").getString("text")
+                    distanceText = leg.getJSONObject("distance").getString("text")
+                }
+
                 val points = decodePolyline(
-                    routes.getJSONObject(0)
+                    route
                         .getJSONObject("overview_polyline")
                         .getString("points")
                 )
@@ -294,9 +309,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     googleMap.addPolyline(
                         PolylineOptions()
                             .addAll(points)
-                            .color(Color.BLUE)    // Ändra till blå (Androids fördefinierade blå)
+                            .color(Color.BLUE)
                             .width(16f)
                     )
+                    // Visa restid och distans direkt i en Toast
+                    if (durationText.isNotEmpty() && distanceText.isNotEmpty()) {
+                        routeInfoOverlay.text = "Restid: $durationText ($distanceText)"
+                        routeInfoOverlay.visibility = View.VISIBLE
+                        routeInfoOverlay.visibility = View.GONE
+
+                    }
                 }
             } else {
                 runOnUiThread {
