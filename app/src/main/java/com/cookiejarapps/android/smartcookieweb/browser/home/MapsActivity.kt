@@ -43,6 +43,8 @@ import android.widget.TextView
 import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AlertDialog
+import com.cookiejarapps.android.smartcookieweb.browser.home.InAppWebViewDialogFragment
+
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -59,6 +61,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     // Hårdkodad API-nyckel
     private val API_KEY = "AIzaSyDi-yYdHhrsyvpdl-lrICWv2XNdusxoVz4"
     private val LOCATION_PERMISSION_REQUEST_CODE = 1001
+
+    // Är det så här det skall vara?
+    private fun showInAppWebViewDialog(context: android.content.Context, url: String) {
+        val activity = context as? AppCompatActivity ?: return
+        val frag = InAppWebViewDialogFragment.newInstance(url)
+        frag.show(activity.supportFragmentManager, "webview_dialog")
+    }
+    // Med avslut här?
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -210,39 +220,59 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             .addOnSuccessListener { response ->
                 val place = response.place
                 val info = StringBuilder()
-                info.append("Name: ${place.name ?: fallbackName}\n")
-                info.append("Address: ${place.address ?: "-"}\n")
-                if (place.phoneNumber != null) info.append("Phone: ${place.phoneNumber}\n")
+                info.append("Namn: ${place.name ?: fallbackName}\n")
+                info.append("Adress: ${place.address ?: "-"}\n")
+                if (place.phoneNumber != null) info.append("Telefon: ${place.phoneNumber}\n")
                 if (place.websiteUri != null) info.append("Webb: ${place.websiteUri}\n")
-                if (place.rating != null) info.append("Rating: ${place.rating} (${place.userRatingsTotal} röster)\n")
+                if (place.rating != null) info.append("Betyg: ${place.rating} (${place.userRatingsTotal} röster)\n")
                 if (place.openingHours != null) {
-                    info.append("Open:\n")
+                    info.append("Öppettider:\n")
                     place.openingHours?.weekdayText?.forEach { line -> info.append("$line\n") }
                 }
-                info.append("\n\nLatest available information")
+                info.append("\n\nSenaste tillgängliga informationen")
 
                 val message = SpannableString(info.toString())
 
-                // Gör telefonnumret klickbart
+                // Gör telefonnummer klickbara
                 if (place.phoneNumber != null) {
                     val phone = place.phoneNumber!!
-                    val start = info.indexOf("Telefon: ") + "Telefon: ".length
-                    val end = start + phone.length
-                    if (start >= "Namn: ${place.name ?: fallbackName}\nAdress: ${place.address ?: "-"}\n".length && end <= message.length) {
-                        message.setSpan(object : ClickableSpan() {
-                            override fun onClick(widget: View) {
-                                val intent = Intent(Intent.ACTION_DIAL)
-                                intent.data = Uri.parse("tel:$phone")
-                                widget.context.startActivity(intent)
-                            }
-                        }, start, end, 0)
+                    val key = if (info.contains("Telefon: ")) "Telefon: " else if (info.contains("Phone: ")) "Phone: " else ""
+                    if (key.isNotEmpty()) {
+                        val start = info.indexOf(key) + key.length
+                        val end = start + phone.length
+                        if (start >= 0 && end <= message.length) {
+                            message.setSpan(object : ClickableSpan() {
+                                override fun onClick(widget: View) {
+                                    val intent = Intent(Intent.ACTION_DIAL)
+                                    intent.data = Uri.parse("tel:$phone")
+                                    widget.context.startActivity(intent)
+                                }
+                            }, start, end, 0)
+                        }
+                    }
+                }
+
+                // Gör webb-adresser klickbara (öppna in-app overlay)
+                if (place.websiteUri != null) {
+                    val webStr = place.websiteUri.toString()
+                    val key = if (info.contains("Webb: ")) "Webb: " else if (info.contains("www: ")) "www: " else ""
+                    if (key.isNotEmpty()) {
+                        val start = info.indexOf(key) + key.length
+                        val end = start + webStr.length
+                        if (start >= 0 && end <= message.length) {
+                            message.setSpan(object : ClickableSpan() {
+                                override fun onClick(widget: View) {
+                                    showInAppWebViewDialog(widget.context, webStr)
+                                }
+                            }, start, end, 0)
+                        }
                     }
                 }
 
                 val dialog = AlertDialog.Builder(this)
                     .setTitle(place.name ?: fallbackName)
                     .setMessage(message)
-                    .setNegativeButton("Ok", null)
+                    .setNegativeButton("Stäng", null)
                     .create()
                 dialog.show()
 
@@ -257,6 +287,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     .show()
             }
     }
+
 
 
     private fun moveToMyLocationAndDrawRoute(destination: LatLng) {
