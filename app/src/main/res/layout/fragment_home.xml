@@ -186,10 +186,10 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|start"
             android:layout_margin="24dp"
+            android:contentDescription="@string/open_map"
             android:src="@drawable/ic_baseline_map_24"
-        android:contentDescription="@string/open_map"
-        app:backgroundTint="@color/teal_700"
-        app:tint="@android:color/white"/>
+            app:backgroundTint="@color/red"
+            app:tint="@android:color/white" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </com.cookiejarapps.android.smartcookieweb.browser.SwipeGestureLayout>

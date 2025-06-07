@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp">
+
+    <AutoCompleteTextView
+        android:id="@+id/dialog_search_input"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="@color/icon_inside_13"
+        android:hint="Sök här"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        android:inputType="text"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:singleLine="true" />
+</FrameLayout>
+

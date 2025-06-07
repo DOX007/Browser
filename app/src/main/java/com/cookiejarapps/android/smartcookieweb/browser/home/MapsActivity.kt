@@ -66,7 +66,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         placesClient = Places.createClient(this)
 
         searchInput = findViewById(R.id.search_input)
-        val adapter = ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line)
+        val displayMetrics = resources.displayMetrics
+        searchInput.dropDownWidth = displayMetrics.widthPixels
+        val adapter = ArrayAdapter<String>(this, R.layout.maps_dropdown_item)
         searchInput.setAdapter(adapter)
         searchInput.threshold = 1
 
