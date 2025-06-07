@@ -8,7 +8,7 @@
         android:id="@+id/dialog_search_input"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:background="@color/icon_inside_13"
+        android:background="#333333"
         android:hint="Sök här"
         android:textColor="@android:color/white"
         android:textSize="16sp"

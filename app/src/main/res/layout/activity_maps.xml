@@ -68,6 +68,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|start"
         android:layout_margin="16dp"
-        android:background="@drawable/red"
+        android:background="#333"
         android:src="@drawable/ic_baseline_map_24"/>
 </FrameLayout>
