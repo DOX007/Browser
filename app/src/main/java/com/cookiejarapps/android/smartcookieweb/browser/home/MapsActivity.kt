@@ -316,8 +316,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     if (durationText.isNotEmpty() && distanceText.isNotEmpty()) {
                         routeInfoOverlay.text = "Restid: $durationText ($distanceText)"
                         routeInfoOverlay.visibility = View.VISIBLE
-                        routeInfoOverlay.visibility = View.GONE
-
                     }
                 }
             } else {
