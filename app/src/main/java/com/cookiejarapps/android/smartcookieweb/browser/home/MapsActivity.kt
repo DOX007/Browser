@@ -46,6 +46,7 @@ import androidx.appcompat.app.AlertDialog
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
+    private var travelMode: String = "driving"
     private var selectedPoiLatLng: LatLng? = null
     private lateinit var googleMap: GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -130,6 +131,21 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         btnMapType.setOnClickListener {
             googleMap.mapType = if (googleMap.mapType == GoogleMap.MAP_TYPE_NORMAL)
                 GoogleMap.MAP_TYPE_SATELLITE else GoogleMap.MAP_TYPE_NORMAL
+        }
+        findViewById<ImageButton>(R.id.btn_route_car).setOnClickListener {
+            travelMode = "driving"
+            Toast.makeText(this, "Bilväg aktiverad", Toast.LENGTH_SHORT).show()
+            selectedPoiLatLng?.let { dest ->
+                moveToMyLocationAndDrawRoute(dest)
+            }
+        }
+
+        findViewById<ImageButton>(R.id.btn_route_walk).setOnClickListener {
+            travelMode = "walking"
+            Toast.makeText(this, "Gångväg aktiverad", Toast.LENGTH_SHORT).show()
+            selectedPoiLatLng?.let { dest ->
+                moveToMyLocationAndDrawRoute(dest)
+            }
         }
     }
 
@@ -256,7 +272,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val originStr = "${origin.latitude},${origin.longitude}"
         val destinationStr = "${destination.latitude},${destination.longitude}"
         val url =
-            "https://maps.googleapis.com/maps/api/directions/json?origin=$originStr&destination=$destinationStr&key=$API_KEY"
+        "https://maps.googleapis.com/maps/api/directions/json?origin=$originStr&destination=$destinationStr&mode=$travelMode&key=$API_KEY"
+
 
         thread {
             val conn = URL(url).openConnection() as HttpsURLConnection
