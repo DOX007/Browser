@@ -62,6 +62,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
+        window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         Places.initialize(applicationContext, API_KEY)
