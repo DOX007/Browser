@@ -43,8 +43,11 @@ import android.widget.TextView
 import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AlertDialog
-import com.cookiejarapps.android.smartcookieweb.browser.home.InAppWebViewDialogFragment
-
+import android.view.LayoutInflater
+import android.view.ViewGroup
+import android.webkit.WebView
+import android.widget.Button
+import androidx.fragment.app.DialogFragment
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -269,22 +272,19 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     }
                 }
 
+                val textView = TextView(this).apply {
+                    text = message
+                    movementMethod = LinkMovementMethod.getInstance()
+                    setPadding(48, 24, 48, 24)
+                    textSize = 16f
+                }
+
                 val dialog = AlertDialog.Builder(this)
                     .setTitle(place.name ?: fallbackName)
-                    .setMessage(message)
+                    .setView(textView)
                     .setNegativeButton("Stäng", null)
                     .create()
                 dialog.show()
-
-                // Gör länkar klickbara
-                (dialog.findViewById<TextView>(android.R.id.message))?.movementMethod = LinkMovementMethod.getInstance()
-            }
-            .addOnFailureListener {
-                AlertDialog.Builder(this)
-                    .setTitle(fallbackName)
-                    .setMessage("Det gick inte att hämta mer information om platsen.")
-                    .setNegativeButton("Stäng", null)
-                    .show()
             }
     }
 
