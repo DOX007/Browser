@@ -246,9 +246,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         if (start >= 0 && end <= message.length) {
                             message.setSpan(object : ClickableSpan() {
                                 override fun onClick(widget: View) {
-                                    val intent = Intent(Intent.ACTION_DIAL)
-                                    intent.data = Uri.parse("tel:$phone")
-                                    widget.context.startActivity(intent)
+                                    val intent = Intent(Intent.ACTION_DIAL).apply {
+                                        data = Uri.parse("tel:$phone")
+                                    }
+                                    if (intent.resolveActivity(widget.context.packageManager) != null) {
+                                        widget.context.startActivity(intent)
+                                    } else {
+                                        Toast.makeText(widget.context, "Ingen app tillgänglig för att ringa", Toast.LENGTH_SHORT).show()
+                                    }
                                 }
                             }, start, end, 0)
                         }
