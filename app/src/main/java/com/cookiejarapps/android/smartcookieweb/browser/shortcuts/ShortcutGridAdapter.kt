@@ -67,23 +67,8 @@ internal class ShortcutGridAdapter(
         imageView.layoutParams.height = size
         imageView.requestLayout()
 
-        val protocolUrl = (shortcuts[position].url ?: "").let {
-            if (it.startsWith("http")) it else "https://$it"
-        }
-
         val fallbackDrawable = ContextCompat.getDrawable(context, R.drawable.bokbok)
-
-        if (UserPreferences(context).loadShortcutIcons) {
-            context.components.icons.loadIntoView(
-                imageView,
-                IconRequest(protocolUrl),
-                fallbackDrawable,
-                fallbackDrawable
-            )
-        } else {
-            imageView.setImageDrawable(fallbackDrawable)
-                }
-
+        imageView.setImageDrawable(fallbackDrawable)
         nameView.text = shortcuts[position].title
 
         return convertView
