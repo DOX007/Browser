@@ -48,9 +48,18 @@ import android.view.ViewGroup
 import android.webkit.WebView
 import android.widget.Button
 import androidx.fragment.app.DialogFragment
+import android.location.LocationManager
+import android.location.LocationListener
+import android.os.Looper
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationResult
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
+    private var fusedLocationCallback: LocationCallback? = null
+    private var locationManager: LocationManager? = null
+    private var locationListener: LocationListener? = null
     private lateinit var routeInfoOverlay: TextView
     private var travelMode: String = "driving"
     private var selectedPoiLatLng: LatLng? = null
@@ -192,12 +201,66 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             ) == PackageManager.PERMISSION_GRANTED
         ) {
             googleMap.isMyLocationEnabled = true
-            fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
-                lastKnownLocation = location
-                location?.let {
-                    val userLatLng = LatLng(it.latitude, it.longitude)
+
+            // 1. Starta FusedLocationProviderClient med requestLocationUpdates
+            val fusedRequest = LocationRequest.create().apply {
+                interval = 2000 // 2 sekunder, justera om du vill
+                fastestInterval = 1000
+                priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+            }
+            fusedLocationCallback = object : LocationCallback() {
+                override fun onLocationResult(result: LocationResult) {
+                    val location = result.lastLocation ?: return
+                    lastKnownLocation = location
+                    val userLatLng = LatLng(location.latitude, location.longitude)
                     googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLatLng, 16f))
+                    selectedPoiLatLng?.let { destination ->
+                        moveToMyLocationAndDrawRoute(destination)
+                    }
                 }
+            }
+            fusedLocationClient.requestLocationUpdates(
+                fusedRequest,
+                fusedLocationCallback!!,
+                Looper.getMainLooper()
+            )
+
+            // 2. Starta LocationManager på båda providers SAMTIDIGT
+            locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
+            locationListener = object : LocationListener {
+                override fun onLocationChanged(location: Location) {
+                    lastKnownLocation = location
+                    val userLatLng = LatLng(location.latitude, location.longitude)
+                    googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLatLng, 16f))
+                    selectedPoiLatLng?.let { destination ->
+                        moveToMyLocationAndDrawRoute(destination)
+                    }
+                }
+                override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
+                override fun onProviderEnabled(provider: String) {}
+                override fun onProviderDisabled(provider: String) {}
+            }
+            try {
+                if (locationManager?.isProviderEnabled(LocationManager.GPS_PROVIDER) == true) {
+                    locationManager?.requestLocationUpdates(
+                        LocationManager.GPS_PROVIDER,
+                        0L,
+                        0f,
+                        locationListener!!,
+                        Looper.getMainLooper()
+                    )
+                }
+                if (locationManager?.isProviderEnabled(LocationManager.NETWORK_PROVIDER) == true) {
+                    locationManager?.requestLocationUpdates(
+                        LocationManager.NETWORK_PROVIDER,
+                        0L,
+                        0f,
+                        locationListener!!,
+                        Looper.getMainLooper()
+                    )
+                }
+            } catch (ex: SecurityException) {
+                ex.printStackTrace()
             }
         } else {
             ActivityCompat.requestPermissions(
@@ -414,4 +477,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             onMapReady(googleMap)
         }
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        locationManager?.removeUpdates(locationListener ?: return)
+        fusedLocationCallback?.let { fusedLocationClient.removeLocationUpdates(it) }
+    }
 }
+
