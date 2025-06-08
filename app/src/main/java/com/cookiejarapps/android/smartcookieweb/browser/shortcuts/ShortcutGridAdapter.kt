@@ -21,6 +21,7 @@ import mozilla.components.browser.icons.IconRequest
 import mozilla.components.browser.icons.preparer.TippyTopIconPreparer
 import mozilla.components.support.ktx.android.net.hostWithoutCommonPrefixes
 import okhttp3.internal.wait
+import androidx.core.content.ContextCompat
 
 internal class ShortcutGridAdapter(
         private val context: Context,
@@ -60,21 +61,28 @@ internal class ShortcutGridAdapter(
         imageView = convertView!!.findViewById(R.id.shortcut_icon)
         nameView = convertView.findViewById(R.id.shortcut_name)
 
-        val protocolUrl = if(shortcuts[position].url!!.startsWith("http")) shortcuts[position].url else "https://" +  shortcuts[position].url
+        val displayMetrics = imageView.context.resources.displayMetrics
+        val size = (displayMetrics.widthPixels * 0.12).toInt() // 12% av skärmbredden, t.ex.
+        imageView.layoutParams.width = size
+        imageView.layoutParams.height = size
+        imageView.requestLayout()
 
-        val iconPlaceholder =
-            Utils().createImage(name = getUrlCharacter(protocolUrl!!), context = context)
-                .toDrawable(context.resources)
-        if(UserPreferences(context).loadShortcutIcons) {
+        val protocolUrl = (shortcuts[position].url ?: "").let {
+            if (it.startsWith("http")) it else "https://$it"
+        }
+
+        val fallbackDrawable = ContextCompat.getDrawable(context, R.drawable.bokbok)
+
+        if (UserPreferences(context).loadShortcutIcons) {
             context.components.icons.loadIntoView(
                 imageView,
                 IconRequest(protocolUrl),
-                iconPlaceholder,
-                iconPlaceholder
+                fallbackDrawable,
+                fallbackDrawable
             )
         } else {
-            imageView.setImageDrawable(iconPlaceholder)
-        }
+            imageView.setImageDrawable(fallbackDrawable)
+                }
 
         nameView.text = shortcuts[position].title
 
