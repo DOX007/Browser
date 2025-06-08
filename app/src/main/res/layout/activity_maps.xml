@@ -119,5 +119,15 @@
             android:src="@drawable/ic_baseline_directions_walk_24"
             android:contentDescription="@string/route_walk"
             android:tint="@android:color/white"/>
+
+        <ImageButton
+            android:id="@+id/btn_clear_map"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/circle_background"
+            android:src="@drawable/btn_clear_map"
+            android:contentDescription="Rensa kartan"
+            android:tint="@android:color/white"/>
     </LinearLayout>
 </FrameLayout>

@@ -1,29 +1,33 @@
 package com.cookiejarapps.android.smartcookieweb.browser.home
 
-import android.graphics.Color
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
+import android.net.Uri
 import android.os.Bundle
+import android.os.Looper
 import android.text.Editable
+import android.text.SpannableString
 import android.text.TextWatcher
-import android.widget.ArrayAdapter
-import android.widget.AutoCompleteTextView
-import android.widget.ImageButton
-import android.widget.Toast
+import android.text.method.LinkMovementMethod
+import android.text.style.ClickableSpan
+import android.view.View
+import android.widget.*
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.cookiejarapps.android.smartcookieweb.R
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.gms.maps.model.PolylineOptions
+import com.google.android.gms.maps.model.*
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.AutocompletePrediction
 import com.google.android.libraries.places.api.model.Place
@@ -35,29 +39,16 @@ import org.json.JSONObject
 import java.net.URL
 import javax.net.ssl.HttpsURLConnection
 import kotlin.concurrent.thread
-import android.text.SpannableString
-import android.text.method.LinkMovementMethod
-import android.text.style.ClickableSpan
-import android.view.View
-import android.widget.TextView
-import android.content.Intent
-import android.net.Uri
-import androidx.appcompat.app.AlertDialog
-import android.view.LayoutInflater
-import android.view.ViewGroup
-import android.webkit.WebView
-import android.widget.Button
-import androidx.fragment.app.DialogFragment
-import android.location.LocationManager
-import android.location.LocationListener
-import android.os.Looper
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationResult
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
-    private var fusedLocationCallback: LocationCallback? = null
+
+
+    private val autoFocusRunnable = Runnable { autoFocus = true }
+     private var myMarker: Marker? = null
+    private var autoFocus = true
+    private val autoFocusHandler = android.os.Handler()
+     private var fusedLocationCallback: LocationCallback? = null
     private var locationManager: LocationManager? = null
     private var locationListener: LocationListener? = null
     private lateinit var routeInfoOverlay: TextView
@@ -74,13 +65,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private val API_KEY = "AIzaSyDi-yYdHhrsyvpdl-lrICWv2XNdusxoVz4"
     private val LOCATION_PERMISSION_REQUEST_CODE = 1001
 
-    // Är det så här det skall vara?
     private fun showInAppWebViewDialog(context: android.content.Context, url: String) {
         val activity = context as? AppCompatActivity ?: return
         val frag = InAppWebViewDialogFragment.newInstance(url)
         frag.show(activity.supportFragmentManager, "webview_dialog")
     }
-    // Med avslut här?
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -99,7 +88,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         searchInput.setAdapter(adapter)
         searchInput.threshold = 1
 
-        // --- Lokal sökning med location bias ---
         searchInput.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {}
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -136,7 +124,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         })
 
         searchInput.setOnItemClickListener { _, _, position, _ ->
-            // Stäng tangentbordet direkt när användaren väljer en plats
             val imm = getSystemService(INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
             imm.hideSoftInputFromWindow(searchInput.windowToken, 0)
 
@@ -147,9 +134,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     placeResponse.place.latLng?.let { destination ->
                         googleMap.clear()
                         googleMap.addMarker(MarkerOptions().position(destination).title("Destination"))
+                        selectedPoiLatLng = destination
                         moveToMyLocationAndDrawRoute(destination)
                     }
-
                 }
         }
 
@@ -157,33 +144,41 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             .findFragmentById(R.id.map_fragment) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
-        val btnMapType = findViewById<ImageButton>(R.id.btn_maptype)
-        btnMapType.setOnClickListener {
+        findViewById<ImageButton>(R.id.btn_maptype).setOnClickListener {
             googleMap.mapType = if (googleMap.mapType == GoogleMap.MAP_TYPE_NORMAL)
                 GoogleMap.MAP_TYPE_SATELLITE else GoogleMap.MAP_TYPE_NORMAL
         }
         findViewById<ImageButton>(R.id.btn_route_car).setOnClickListener {
             travelMode = "driving"
             Toast.makeText(this, "Bilväg aktiverad", Toast.LENGTH_SHORT).show()
-            selectedPoiLatLng?.let { dest ->
-                moveToMyLocationAndDrawRoute(dest)
-            }
+            selectedPoiLatLng?.let { dest -> moveToMyLocationAndDrawRoute(dest) }
         }
-
         findViewById<ImageButton>(R.id.btn_route_walk).setOnClickListener {
             travelMode = "walking"
             Toast.makeText(this, "Gångväg aktiverad", Toast.LENGTH_SHORT).show()
-            selectedPoiLatLng?.let { dest ->
-                moveToMyLocationAndDrawRoute(dest)
-            }
+            selectedPoiLatLng?.let { dest -> moveToMyLocationAndDrawRoute(dest) }
+        }
+        // Exempel på rensa-karta-knapp (lägg till en ImageButton med id btn_clear_map i din layout!)
+        findViewById<ImageButton?>(R.id.btn_clear_map)?.setOnClickListener {
+            clearMap()
+            myMarker?.remove()
+            myMarker = null
         }
     }
 
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
 
+        googleMap.setOnCameraMoveStartedListener { reason ->
+            if (reason == GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE) {
+                autoFocus = false
+                autoFocusHandler.removeCallbacks(autoFocusRunnable)
+                autoFocusHandler.postDelayed(autoFocusRunnable, 20_000)
+            }
+        }
+
         googleMap.setOnPoiClickListener { poi ->
-            selectedPoiLatLng = poi.latLng // Spara koordinaten!
+            selectedPoiLatLng = poi.latLng
             googleMap.clear()
             googleMap.addMarker(MarkerOptions().position(poi.latLng).title(poi.name))?.showInfoWindow()
             fetchPoiDetailsAndShow(poi.placeId, poi.name)
@@ -192,30 +187,33 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         googleMap.setOnMapLongClickListener { latLng ->
             googleMap.clear()
             googleMap.addMarker(MarkerOptions().position(latLng).title("Navigera hit"))
+            selectedPoiLatLng = latLng
             moveToMyLocationAndDrawRoute(latLng)
         }
 
         if (ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
+                this, Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
         ) {
             googleMap.isMyLocationEnabled = true
 
-            // 1. Starta FusedLocationProviderClient med requestLocationUpdates
-            val fusedRequest = LocationRequest.create().apply {
-                interval = 2000 // 2 sekunder, justera om du vill
-                fastestInterval = 1000
-                priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-            }
+            // --- FusedLocationProviderClient ---
+            val fusedRequest = LocationRequest.Builder(2000)
+                .setMinUpdateIntervalMillis(1000)
+                .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+                .build()
+
             fusedLocationCallback = object : LocationCallback() {
                 override fun onLocationResult(result: LocationResult) {
                     val location = result.lastLocation ?: return
                     lastKnownLocation = location
-                    val userLatLng = LatLng(location.latitude, location.longitude)
-                    googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLatLng, 16f))
-                    selectedPoiLatLng?.let { destination ->
-                        moveToMyLocationAndDrawRoute(destination)
+                    if (selectedPoiLatLng != null) {
+                        moveToMyLocationAndDrawRoute(selectedPoiLatLng!!)
+                    }
+                    if (autoFocus) {
+                        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                            LatLng(location.latitude, location.longitude), 16f
+                        ))
                     }
                 }
             }
@@ -225,15 +223,19 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 Looper.getMainLooper()
             )
 
-            // 2. Starta LocationManager på båda providers SAMTIDIGT
+            // --- LocationManager på båda providers ---
             locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
             locationListener = object : LocationListener {
                 override fun onLocationChanged(location: Location) {
                     lastKnownLocation = location
                     val userLatLng = LatLng(location.latitude, location.longitude)
-                    googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLatLng, 16f))
-                    selectedPoiLatLng?.let { destination ->
-                        moveToMyLocationAndDrawRoute(destination)
+                    if (selectedPoiLatLng != null) {
+                        moveToMyLocationAndDrawRoute(selectedPoiLatLng!!)
+                    }
+                    if (autoFocus) {
+                        googleMap.animateCamera(
+                            CameraUpdateFactory.newLatLngZoom(userLatLng, 16f)
+                        )
                     }
                 }
                 override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
@@ -270,6 +272,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    private fun clearMap() {
+        googleMap.clear()
+        selectedPoiLatLng = null
+        routeInfoOverlay.visibility = View.GONE
+    }
+
     private fun fetchPoiDetailsAndShow(placeId: String, fallbackName: String) {
         val fields = listOf(
             Place.Field.NAME,
@@ -299,7 +307,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
                 val message = SpannableString(info.toString())
 
-                // Gör telefonnummer klickbara
+                // Klickbara telefonnummer
                 if (place.phoneNumber != null) {
                     val phone = place.phoneNumber!!
                     val key = if (info.contains("Telefon: ")) "Telefon: " else if (info.contains("Phone: ")) "Phone: " else ""
@@ -322,8 +330,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         }
                     }
                 }
-
-                // Gör webb-adresser klickbara (öppna in-app overlay)
+                // Klickbara webbadresser
                 if (place.websiteUri != null) {
                     val webStr = place.websiteUri.toString()
                     val key = if (info.contains("Webb: ")) "Webb: " else if (info.contains("www: ")) "www: " else ""
@@ -356,8 +363,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
     }
 
-
-
     private fun moveToMyLocationAndDrawRoute(destination: LatLng) {
         val origin = lastKnownLocation
         if (origin == null) {
@@ -365,14 +370,19 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             return
         }
         val originLatLng = LatLng(origin.latitude, origin.longitude)
-        googleMap.addMarker(MarkerOptions().position(originLatLng).title("Du"))
+        // Hantera ENDAST en egen markör
+        if (myMarker == null) {
+            myMarker = googleMap.addMarker(MarkerOptions().position(originLatLng).title("Du"))
+        } else {
+            myMarker?.position = originLatLng
+        }
         drawRoute(originLatLng, destination)
-        googleMap.animateCamera(
-            CameraUpdateFactory.newLatLngBounds(
-                com.google.android.gms.maps.model.LatLngBounds.Builder()
-                    .include(originLatLng).include(destination).build(), 200
+        // Endast centrera om autofokus är på!
+        if (autoFocus) {
+            googleMap.animateCamera(
+                CameraUpdateFactory.newLatLngZoom(originLatLng, 16f)
             )
-        )
+        }
     }
 
     private fun drawRoute(origin: LatLng, destination: LatLng) {
@@ -399,9 +409,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
 
                 val points = decodePolyline(
-                    route
-                        .getJSONObject("overview_polyline")
-                        .getString("points")
+                    route.getJSONObject("overview_polyline").getString("points")
                 )
 
                 runOnUiThread {
@@ -411,7 +419,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                             .color(Color.BLUE)
                             .width(16f)
                     )
-                    // Visa restid och distans direkt i en Toast
                     if (durationText.isNotEmpty() && distanceText.isNotEmpty()) {
                         routeInfoOverlay.text = "Restid: $durationText ($distanceText)"
                         routeInfoOverlay.visibility = View.VISIBLE
@@ -484,4 +491,3 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         fusedLocationCallback?.let { fusedLocationClient.removeLocationUpdates(it) }
     }
 }
-
