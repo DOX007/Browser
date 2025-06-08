@@ -22,6 +22,7 @@ import mozilla.components.browser.icons.preparer.TippyTopIconPreparer
 import mozilla.components.support.ktx.android.net.hostWithoutCommonPrefixes
 import okhttp3.internal.wait
 import androidx.core.content.ContextCompat
+import android.util.TypedValue
 
 internal class ShortcutGridAdapter(
         private val context: Context,
@@ -46,9 +47,9 @@ internal class ShortcutGridAdapter(
     }
 
     override fun getView(
-            position: Int,
-            convertView: View?,
-            parent: ViewGroup
+        position: Int,
+        convertView: View?,
+        parent: ViewGroup
     ): View {
         var convertView = convertView
         if (layoutInflater == null) {
@@ -61,19 +62,28 @@ internal class ShortcutGridAdapter(
         imageView = convertView!!.findViewById(R.id.shortcut_icon)
         nameView = convertView.findViewById(R.id.shortcut_name)
 
+        // Dynamisk ikon-storlek: Fyller 80% av 1/4 av skärmen, max 120dp
         val displayMetrics = imageView.context.resources.displayMetrics
-        val size = (displayMetrics.widthPixels * 0.12).toInt() // 12% av skärmbredden, t.ex.
+        val desiredPx = (displayMetrics.widthPixels / 4 * 0.8).toInt() // Fyra per rad, 80% bredd
+        val maxPx = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP, 120f, displayMetrics
+        ).toInt()
+        val size = minOf(desiredPx, maxPx)
         imageView.layoutParams.width = size
         imageView.layoutParams.height = size
         imageView.requestLayout()
 
+        // Sätt fallback-ikonen (alltid för shortcuts)
         val fallbackDrawable = ContextCompat.getDrawable(context, R.drawable.bokbok)
         imageView.setImageDrawable(fallbackDrawable)
+
+        // Sätt text
         nameView.text = shortcuts[position].title
 
         return convertView
     }
 
+    // ...resten av dina metoder är oförändrade
     private fun getUrlHost(url: String): String {
         val uri = Uri.parse(url)
 
