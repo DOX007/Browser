@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+  <string name="route_gpt">chatGPT</string>
   <string name="route_car">Bil</string>
   <string name="route_walk">Till fots</string>
   <string name="maptype">Karttyp</string>

@@ -181,6 +181,17 @@
             app:tint="@android:color/white"/>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btn_chatgpt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center"
+            android:layout_margin="24dp"
+            android:contentDescription="@string/route_gpt"
+            android:src="@drawable/gpt"
+            app:backgroundTint="@color/red"
+            app:tint="@android:color/white" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/btn_map"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -190,6 +201,9 @@
             android:src="@drawable/ic_baseline_map_24"
             app:backgroundTint="@color/red"
             app:tint="@android:color/white" />
+
+
+
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </com.cookiejarapps.android.smartcookieweb.browser.SwipeGestureLayout>

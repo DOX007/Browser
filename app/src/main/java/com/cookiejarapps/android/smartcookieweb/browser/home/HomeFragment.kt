@@ -388,7 +388,6 @@ class HomeFragment : Fragment() {
         observeSearchEngineChanges()
         createHomeMenu(requireContext(), WeakReference(binding.menuButton))
 
-
         binding.powerOffFab.setOnClickListener {
             AlertDialog.Builder(requireContext())
                 .setTitle("Stäng appen?")
@@ -405,6 +404,13 @@ class HomeFragment : Fragment() {
             val intent = Intent(requireContext(), MapsActivity::class.java)
             startActivity(intent)
         }
+
+        // --- Lägg till denna kod för ChatGPT-knapp ---
+        binding.btnChatgpt.setOnClickListener {
+            val intent = Intent(requireContext(), ChatGptActivity::class.java)
+            startActivity(intent)
+        }
+        // --- ChatGPT-kod slut ---
 
         binding.menuButton.setColorFilter(
             ContextCompat.getColor(
@@ -437,6 +443,7 @@ class HomeFragment : Fragment() {
             navigateToSearch()
         }
     }
+
 
     private fun observeSearchEngineChanges() {
         consumeFlow(store) { flow ->
