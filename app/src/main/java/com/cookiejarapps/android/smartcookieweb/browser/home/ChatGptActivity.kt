@@ -1,4 +1,4 @@
-package com.dox.browser
+package com.cookiejarapps.android.smartcookieweb.browser.home
 
 import android.os.Bundle
 import android.widget.Button
@@ -20,9 +20,7 @@ class ChatGptActivity : AppCompatActivity() {
     private lateinit var etMessage: EditText
     private lateinit var btnSend: Button
 
-
-    // Hårdkodad API-nyckel (din)
-    private val openAIApiKey = "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"
+    private val openAIApiKey = "sk-proj-GK0¤GK576K8V-Ax7IYKbbaNeOaZdr3yTlBeHCW1hmmREqHY6TL_StLVZEoJSfBujVqH_f979WiT3BlbkFJxFfxOW-KNoC22vS2DlXjPSxg9RCy2S6mbO9vRoSO9U7MyNsnR2AsRBB8sTc0GSTvVBXLF7wcMA"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,8 +50,6 @@ class ChatGptActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val client = OkHttpClient()
-
-                // Byt modell om du vill! (Exempel: gpt-3.5-turbo, gpt-4o, osv)
                 val jsonBody = JSONObject()
                 jsonBody.put("model", "gpt-3.5-turbo")
                 val messages = org.json.JSONArray()
@@ -65,8 +61,7 @@ class ChatGptActivity : AppCompatActivity() {
                 )
                 jsonBody.put("messages", messages)
 
-                val body = jsonBody.toString()
-                    .toRequestBody("application/json".toMediaType())
+                val body = jsonBody.toString().toRequestBody("application/json".toMediaType())
 
                 val request = Request.Builder()
                     .url("https://api.openai.com/v1/chat/completions")
