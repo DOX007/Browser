@@ -22,14 +22,6 @@ class SearchEngineList {
                 suggestUrl = "https://www.duckduckgo.com/"
             ),
             SearchEngine(
-                id = "google-b-m",
-                name = "Google",
-                icon = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888),
-                type = SearchEngine.Type.BUNDLED,
-                resultUrls = listOf("https://www.google.com/?q={searchTerms}"),
-                suggestUrl = "https://www.google.com/"
-            ),
-            SearchEngine(
                 id = "bing",
                 name = "Bing",
                 icon = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888),

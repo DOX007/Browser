@@ -74,7 +74,7 @@ internal class ShortcutGridAdapter(
         imageView.requestLayout()
 
         // Sätt fallback-ikonen (alltid för shortcuts)
-        val fallbackDrawable = ContextCompat.getDrawable(context, R.drawable.bokbok)
+        val fallbackDrawable = ContextCompat.getDrawable(context, R.drawable.ic_shortcut_fallback)
         imageView.setImageDrawable(fallbackDrawable)
 
         // Sätt text

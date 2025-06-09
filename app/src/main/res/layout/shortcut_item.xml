@@ -1,28 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:gravity="center"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="64dp"
+    android:layout_height="64dp"
     android:orientation="vertical">
 
     <ImageView
         android:id="@+id/shortcut_icon"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_gravity="center"
         android:layout_weight="1"
         android:adjustViewBounds="true"
         android:scaleType="fitCenter"
-        android:maxWidth="120dp"
-        android:maxHeight="120dp"
-        android:src="@drawable/bokbok" />
+        android:src="@drawable/ic_shortcut_fallback" />
 
     <TextView
         android:id="@+id/shortcut_name"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:singleLine="true"
-        android:textAlignment="center" />
+        android:textAlignment="center"
+        android:fontFamily="@font/pill"/>
+
+
 </LinearLayout>
-
-
-
