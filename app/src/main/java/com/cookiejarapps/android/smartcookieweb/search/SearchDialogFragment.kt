@@ -218,21 +218,16 @@ class SearchDialogFragment : AppCompatDialogFragment(), UserInteractionHandler {
             }
             requireContext().components.clipboardHandler.text = null
         }
-
+                // Fixed the dubbel txt --
         consumeFrom(store) {
-            /*
-            * firstUpdate is used to make sure we keep the awesomebar hidden on the first run
-            *  of the searchFragmentDialog. We only turn it false after the user has changed the
-            *  query as consumeFrom may run several times on fragment start due to state updates.
-            * */
+
             if (it.url != it.query) firstUpdate = false
             binding.awesomeBar.visibility = if (shouldShowAwesomebar(it)) View.VISIBLE else View.INVISIBLE
             updateClipboardSuggestion(it, requireContext().components.clipboardHandler.containsURL())
             updateToolbarContentDescription(it)
             updateSearchShortcutsIcon(it)
             toolbarView.update(it)
-            awesomeBarView.update(requireContext(), it)
-        }
+                    }
     }
 
     private fun shouldShowAwesomebar(searchFragmentState: SearchFragmentState) =
