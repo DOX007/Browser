@@ -1,48 +1,76 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:background="#121212">
 
-    <TextView
-        android:id="@+id/title"
-        android:text="ChatGPT"
-        android:textSize="24sp"
-        android:layout_width="wrap_content"
+    <RelativeLayout
+        android:id="@+id/gpt_promptbar"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"/>
 
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:background="#FAFAFA"
-        android:padding="8dp">
-
-        <TextView
-            android:id="@+id/chat_history"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text=""
-            android:textSize="16sp"/>
-    </ScrollView>
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="24dp"
+        android:background="@drawable/home_search"
+        android:elevation="8dp"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp">
 
         <EditText
-            android:id="@+id/et_message"
-            android:layout_width="0dp"
-            android:layout_weight="1"
+            android:id="@+id/gpt_prompt"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Skriv ett meddelande..." />
+            android:minHeight="40dp"
+            android:layout_alignParentStart="true"
+            android:layout_toStartOf="@id/gpt_send"
+            android:background="@android:color/transparent"
+            android:hint="Fråga ChatGPT..."
+            android:textColor="@android:color/white"
+            android:textColorHint="#AAFFFFFF"
+            android:inputType="textMultiLine|textCapSentences"
+            android:minLines="1"
+            android:maxLines="5"
+            android:scrollbars="vertical"
+            android:overScrollMode="always"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:gravity="center_vertical|start"
+            android:textSize="16sp" />
 
-        <Button
-            android:id="@+id/btn_send"
-            android:layout_width="wrap_content"
+
+        <ImageButton
+            android:id="@+id/gpt_send"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:background="@drawable/bg_maps_search"
+            android:src="@drawable/ic_round_send"
+            android:tint="#FF1E88E5"
+            android:contentDescription="Skicka" />
+    </RelativeLayout>
+
+    <ScrollView
+        android:id="@+id/gpt_scroll"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="90dp"
+        android:layout_marginBottom="10dp"
+        android:fillViewport="true">
+
+        <TextView
+            android:id="@+id/gpt_response"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Skicka" />
-    </LinearLayout>
-</LinearLayout>
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:padding="16dp"
+            android:textIsSelectable="true"
+            android:longClickable="true"
+            android:cursorVisible="false"
+            android:text="" />
+    </ScrollView>
+
+</FrameLayout>

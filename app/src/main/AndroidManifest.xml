@@ -48,7 +48,10 @@
       </intent-filter>
     </activity>
 
-    <!-- ENDA ändringen nedan! -->
+    <activity
+        android:name=".browser.home.ChatGPTActivity"
+        android:exported="true" />
+
     <activity
         android:name="com.cookiejarapps.android.smartcookieweb.browser.home.MapsActivity"
         android:exported="false"

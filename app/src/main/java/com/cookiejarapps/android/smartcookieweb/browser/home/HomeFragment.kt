@@ -399,18 +399,16 @@ class HomeFragment : Fragment() {
                 .show()
         }
 
+        binding.btnChatgpt.setOnClickListener {
+            val intent = Intent(requireContext(), ChatGPTActivity::class.java)
+            startActivity(intent)
+        }
+
         // Här kopplar vi btn_map till den nya MapsActivity
         binding.btnMap.setOnClickListener {
             val intent = Intent(requireContext(), MapsActivity::class.java)
             startActivity(intent)
         }
-
-        // --- Lägg till denna kod för ChatGPT-knapp ---
-        binding.btnChatgpt.setOnClickListener {
-            val intent = Intent(requireContext(), ChatGptActivity::class.java)
-            startActivity(intent)
-        }
-        // --- ChatGPT-kod slut ---
 
         binding.menuButton.setColorFilter(
             ContextCompat.getColor(
