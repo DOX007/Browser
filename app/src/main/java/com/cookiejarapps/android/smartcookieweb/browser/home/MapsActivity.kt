@@ -43,7 +43,7 @@ import kotlin.concurrent.thread
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
-
+    private var routePolyline: Polyline? = null
     private val autoFocusRunnable = Runnable { autoFocus = true }
      private var myMarker: Marker? = null
     private var autoFocus = true
@@ -83,10 +83,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         searchInput = findViewById(R.id.search_input)
         val displayMetrics = resources.displayMetrics
-        searchInput.dropDownWidth = displayMetrics.widthPixels
-        val adapter = ArrayAdapter<String>(this, R.layout.maps_dropdown_item)
+        searchInput.dropDownWidth = displayMetrics.widthPixels  // Dropdown bredd samma som skärmen
+
+        val adapter = ArrayAdapter<String>(this, R.layout.maps_dropdown_item)  // Anpassad layout för dropdown
         searchInput.setAdapter(adapter)
-        searchInput.threshold = 1
+        searchInput.setTextColor(Color.WHITE)
+        searchInput.threshold = 1  // Börja visa förslag efter 1 tecken
 
         searchInput.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {}
@@ -132,13 +134,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             placesClient.fetchPlace(FetchPlaceRequest.builder(placeId, placeFields).build())
                 .addOnSuccessListener { placeResponse ->
                     placeResponse.place.latLng?.let { destination ->
-                        googleMap.clear()
+                        routePolyline?.remove()
+                        myMarker?.remove()
+                        myMarker = null
+
                         googleMap.addMarker(MarkerOptions().position(destination).title("Destination"))
                         selectedPoiLatLng = destination
                         moveToMyLocationAndDrawRoute(destination)
                     }
                 }
         }
+
 
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map_fragment) as SupportMapFragment

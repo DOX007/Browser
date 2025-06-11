@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -7,7 +8,6 @@
         android:id="@+id/gpt_promptbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginTop="24dp"
@@ -24,7 +24,7 @@
             android:layout_height="wrap_content"
             android:minHeight="40dp"
             android:layout_alignParentStart="true"
-            android:layout_toStartOf="@id/gpt_send"
+            android:layout_toStartOf="@id/button_container"
             android:background="@android:color/transparent"
             android:hint="Fråga ChatGPT..."
             android:textColor="@android:color/white"
@@ -39,17 +39,36 @@
             android:gravity="center_vertical|start"
             android:textSize="16sp" />
 
-
-        <ImageButton
-            android:id="@+id/gpt_send"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
+        <LinearLayout
+            android:id="@+id/button_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:background="@drawable/bg_maps_search"
-            android:src="@drawable/ic_round_send"
-            android:tint="#FF1E88E5"
-            android:contentDescription="Skicka" />
+            android:orientation="horizontal">
+            <!--
+            <ImageButton
+                android:id="@+id/gpt_minimize"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@drawable/bg_maps_search"
+                android:src="@drawable/ic_baseline_chevron_down"
+                android:elevation="10dp"
+                android:contentDescription="Minimera"
+                android:tint="#FF1E88E5"
+                android:layout_marginEnd="4dp" />
+                -->
+            <ImageButton
+                android:id="@+id/gpt_send"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@drawable/bg_maps_search"
+                android:src="@drawable/ic_round_send"
+                android:tint="#FF1E88E5"
+                android:contentDescription="Skicka" />
+
+        </LinearLayout>
+
     </RelativeLayout>
 
     <ScrollView

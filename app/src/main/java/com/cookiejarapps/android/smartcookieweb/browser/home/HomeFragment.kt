@@ -71,6 +71,8 @@ import mozilla.components.ui.tabcounter.TabCounterMenu
 import org.mozilla.gecko.util.ThreadUtils
 import java.lang.ref.WeakReference
 import mozilla.components.ui.widgets.behavior.ToolbarPosition as OldToolbarPosition
+import com.cookiejarapps.android.smartcookieweb.browser.home.ChatGPTActivity
+
 
 
 @ExperimentalCoroutinesApi
@@ -399,10 +401,10 @@ class HomeFragment : Fragment() {
                 .show()
         }
 
-        binding.btnChatgpt.setOnClickListener {
-            val intent = Intent(requireContext(), ChatGPTActivity::class.java)
-            startActivity(intent)
-        }
+ //       binding.btnChatgpt.setOnClickListener {
+ //           val intent = Intent(requireContext(), ChatGPTActivity::class.java)
+ //           startActivity(intent)
+ //       }
 
         // Här kopplar vi btn_map till den nya MapsActivity
         binding.btnMap.setOnClickListener {

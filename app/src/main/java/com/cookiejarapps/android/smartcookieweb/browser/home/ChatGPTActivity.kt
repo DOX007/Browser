@@ -1,5 +1,6 @@
 package com.cookiejarapps.android.smartcookieweb.browser.home
 
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -47,7 +48,11 @@ class ChatGPTActivity : AppCompatActivity() {
             }
         }
 
-        // Scrolla ScrollView till botten när text ändras i EditText (fler rader)
+    //    val minimizeButton = findViewById<ImageButton>(R.id.gpt_minimize)
+    //    minimizeButton.setOnClickListener {
+    //        moveTaskToBack(true)
+    //    }
+
         promptEditText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
@@ -64,7 +69,6 @@ class ChatGPTActivity : AppCompatActivity() {
                 }
             }
         })
-
     }
 
     private fun sendPrompt(
