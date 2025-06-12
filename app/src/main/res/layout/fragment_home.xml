@@ -70,7 +70,8 @@
                     android:layout_height="match_parent"
                     android:numColumns="3"
                     android:horizontalSpacing="8dp"
-                    android:verticalSpacing="8dp" />
+                    android:verticalSpacing="8dp"
+                    android:paddingBottom="150dp"/>
             </LinearLayout>
 
         </LinearLayout>

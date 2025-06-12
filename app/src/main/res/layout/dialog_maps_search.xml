@@ -10,11 +10,15 @@
         android:layout_height="48dp"
         android:background="#333333"
         android:hint="Sök här"
-        android:textColor="@android:color/white"
+        android:textColor="@color/icon_circle_0"
+        android:textColorHint="@color/icon_circle_0"
         android:textSize="16sp"
         android:inputType="text"
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
-        android:singleLine="true" />
+        android:singleLine="true"
+        android:imeOptions="actionSearch"
+        android:focusable="true"
+        android:focusableInTouchMode="true" />
 </FrameLayout>
 

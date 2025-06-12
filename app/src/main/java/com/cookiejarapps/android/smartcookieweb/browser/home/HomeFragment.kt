@@ -401,10 +401,10 @@ class HomeFragment : Fragment() {
                 .show()
         }
 
- //       binding.btnChatgpt.setOnClickListener {
- //           val intent = Intent(requireContext(), ChatGPTActivity::class.java)
- //           startActivity(intent)
- //       }
+        binding.btnChatgpt.setOnClickListener {
+           val intent = Intent(requireContext(), ChatGPTActivity::class.java)
+            startActivity(intent)
+        }
 
         // Här kopplar vi btn_map till den nya MapsActivity
         binding.btnMap.setOnClickListener {

@@ -87,7 +87,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         val adapter = ArrayAdapter<String>(this, R.layout.maps_dropdown_item)  // Anpassad layout för dropdown
         searchInput.setAdapter(adapter)
-        searchInput.setTextColor(Color.WHITE)
+        searchInput.setTextColor(Color.LTGRAY)
+        searchInput.setHintTextColor(Color.LTGRAY)
         searchInput.threshold = 1  // Börja visa förslag efter 1 tecken
 
         searchInput.addTextChangedListener(object : TextWatcher {
@@ -125,6 +126,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         })
 
+
+
         searchInput.setOnItemClickListener { _, _, position, _ ->
             val imm = getSystemService(INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
             imm.hideSoftInputFromWindow(searchInput.windowToken, 0)
@@ -143,6 +146,20 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         moveToMyLocationAndDrawRoute(destination)
                     }
                 }
+        }
+        searchInput.setOnEditorActionListener { v, actionId, event ->
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH ||
+                actionId == android.view.inputmethod.EditorInfo.IME_ACTION_DONE ||
+                (event != null && event.keyCode == android.view.KeyEvent.KEYCODE_ENTER && event.action == android.view.KeyEvent.ACTION_DOWN)) {
+
+                val query = searchInput.text.toString()
+                if (query.isNotBlank()) {
+                    performSearch(query)
+                }
+                true
+            } else {
+                false
+            }
         }
 
 
@@ -171,7 +188,36 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             myMarker = null
         }
     }
+    private fun performSearch(query: String) {
+        val request = FindAutocompletePredictionsRequest.builder()
+            .setQuery(query)
+            .build()
 
+        placesClient.findAutocompletePredictions(request)
+            .addOnSuccessListener { response ->
+                if (response.autocompletePredictions.isNotEmpty()) {
+                    val placeId = response.autocompletePredictions[0].placeId
+                    val placeFields = listOf(Place.Field.LAT_LNG)
+                    placesClient.fetchPlace(FetchPlaceRequest.builder(placeId, placeFields).build())
+                        .addOnSuccessListener { placeResponse ->
+                            placeResponse.place.latLng?.let { destination ->
+                                routePolyline?.remove()
+                                myMarker?.remove()
+                                myMarker = null
+
+                                googleMap.addMarker(MarkerOptions().position(destination).title("Destination"))
+                                selectedPoiLatLng = destination
+                                moveToMyLocationAndDrawRoute(destination)
+                            }
+                        }
+                } else {
+                    Toast.makeText(this, "Inga resultat för \"$query\"", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "Fel vid sökning", Toast.LENGTH_SHORT).show()
+            }
+    }
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
 
@@ -217,9 +263,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         moveToMyLocationAndDrawRoute(selectedPoiLatLng!!)
                     }
                     if (autoFocus) {
-                        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
-                            LatLng(location.latitude, location.longitude), 16f
-                        ))
+                        val cameraPosition = CameraPosition.Builder()
+                            .target(LatLng(location.latitude, location.longitude))
+                            .zoom(16f)
+                            .bearing(location.bearing)
+                            .tilt(45f)
+                            .build()
+                        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
                     }
                 }
             }
